@@ -14,6 +14,12 @@ const maxJSONInt = 9007199254740991
 const smallestJSONFloat = float64(-9007199254740991)
 const maxJSONFloat = float64(9007199254740991)
 
+func NewNumber(val interface{}) (*Number, error) {
+	n := &Number{}
+	err := n.Set(val)
+	return n, err
+}
+
 type Number struct {
 	intValue   *int64
 	uintValue  *uint64
@@ -25,6 +31,10 @@ func (n *Number) Set(value interface{}) error {
 	n.floatValue = nil
 	n.floatValue = nil
 	switch v := value.(type) {
+	case Number:
+		return n.Set(v.Value())
+	case *Number:
+		return n.Set(v.Value())
 	case float32:
 		f := float64(v)
 		n.floatValue = &f
