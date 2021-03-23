@@ -26,7 +26,8 @@ func (s String) Value() interface{} {
 	return *str
 }
 
-func (s String) IsEmpty() bool {
+func (s *String) IsEmpty() bool {
+
 	if s.value == nil {
 		return true
 	}
@@ -62,7 +63,16 @@ func (s *String) UnmarshalJSON(data []byte) error {
 }
 
 func (s *String) Set(value interface{}) error {
+	s.value = nil
 	switch v := value.(type) {
+	case String:
+		if v.value == nil {
+			return nil
+		}
+		t := v.String()
+		s.value = &t
+	case *String:
+		return s.Set(*v)
 	case string:
 		s.value = &v
 	case *string:

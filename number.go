@@ -311,7 +311,8 @@ func (n Number) MarshalJSON() ([]byte, error) {
 
 func isNumber(v interface{}) bool {
 	switch v.(type) {
-	case uint, *uint, uint64, *uint64, uint32, *uint32, uint16, *uint16, uint8, *uint8,
+	case Number, *Number,
+		uint, *uint, uint64, *uint64, uint32, *uint32, uint16, *uint16, uint8, *uint8,
 		int, *int, int64, *int64, int32, *int32, int16, *int16, int8, *int8,
 		float64, *float64, float32, *float32,
 		json.Number, *json.Number:

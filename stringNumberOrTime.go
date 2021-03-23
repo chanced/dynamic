@@ -6,13 +6,14 @@ import (
 	"time"
 )
 
-func NewStringNumberOrTime() *StringNumberOrTime {
+func NewStringNumberOrTime(v interface{}) (*StringNumberOrTime, error) {
 	snt := &StringNumberOrTime{
 		time:   Time{},
 		str:    String{},
 		number: Number{},
 	}
-	return snt
+	err := snt.Set(v)
+	return snt, err
 }
 
 type StringNumberOrTime struct {
@@ -49,6 +50,12 @@ func (snt StringNumberOrTime) Value() interface{} {
 // Set returns an error if value is not one of the aforementioned types
 func (snt *StringNumberOrTime) Set(value interface{}) error {
 	snt.Clear()
+	if v, ok := value.(*StringNumberOrTime); ok {
+		return snt.Set(v.Value())
+	}
+	if v, ok := value.(*StringNumberOrTime); ok {
+		return snt.Set(v.Value())
+	}
 	if isNumber(value) {
 		return snt.number.Set(value)
 	}
@@ -195,4 +202,31 @@ func (snt *StringNumberOrTime) Uint() (interface{}, bool) {
 func (snt *StringNumberOrTime) IsNumber() bool {
 	_, ok := snt.Number()
 	return ok
+}
+
+func (snt *StringNumberOrTime) IsNilOrEmpty() bool {
+	if snt == nil {
+		return true
+	}
+	if snt.number.IsNil() && snt.time.IsNil() && snt.str.IsNil() {
+		return true
+	}
+	if snt.IsString() {
+		return snt.str.IsEmpty()
+	}
+	return false
+}
+
+// IsNilOrZero indiciates whether SNT is nil, empty string, or zero value
+func (snt *StringNumberOrTime) IsNilOrZero() bool {
+	if snt.IsNilOrEmpty() {
+		return true
+	}
+	if v, ok := snt.Number(); ok {
+		return v == 0
+	}
+	if v, ok := snt.Time(); ok {
+		return v.IsZero()
+	}
+	return false
 }

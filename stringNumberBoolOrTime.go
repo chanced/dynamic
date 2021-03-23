@@ -13,15 +13,15 @@ type StringNumberBoolOrTime struct {
 	boolean Bool
 }
 
-func NewStringNumberBoolOrTime() *StringNumberBoolOrTime {
+func NewStringNumberBoolOrTime(v interface{}) (*StringNumberBoolOrTime, error) {
 	snbt := &StringNumberBoolOrTime{
 		time:    Time{},
 		str:     String{},
 		number:  Number{},
 		boolean: Bool{},
 	}
-
-	return snbt
+	err := snbt.Set(v)
+	return snbt, err
 }
 
 func (snbt StringNumberBoolOrTime) Value() interface{} {
