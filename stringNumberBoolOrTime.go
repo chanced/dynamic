@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+// TODO: add the ability to assign a format at the instance level
+
 type StringNumberBoolOrTime struct {
 	time    Time
 	str     String
@@ -13,15 +15,42 @@ type StringNumberBoolOrTime struct {
 	boolean Bool
 }
 
-func NewStringNumberBoolOrTime(v interface{}) (*StringNumberBoolOrTime, error) {
-	snbt := &StringNumberBoolOrTime{
+// NewStringNumberBoolOrTime returns a new StringNumberBoolOrTime set to the first
+// value, if any.
+//
+// Types
+//
+// You can set String to any of the following:
+//  string, []byte, dynamic.String, fmt.Stringer, []string, *string,
+//  time.Time, *time.Time,
+//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
+//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
+//  float64, float32, complex128, complex64, *float64, *float32, *complex128, *complex64
+//  bool, *bool
+//  nil
+//
+// Warning
+//
+// This function fails silently. If the value provided is not an accepted type, the underlying value is set to nil.
+// If you need type checking, use:
+//  snbt := dynamic.NewStringNumberBoolOrTime()
+//  err := snbt.Set("tru")
+func NewStringNumberBoolOrTime(value ...interface{}) StringNumberBoolOrTime {
+	snbt := StringNumberBoolOrTime{
 		time:    Time{},
 		str:     String{},
 		number:  Number{},
 		boolean: Bool{},
 	}
-	err := snbt.Set(v)
-	return snbt, err
+	if len(value) > 0 {
+		snbt.Set(value[0])
+	}
+	return snbt
+}
+
+func NewStringNumberBoolOrTimePtr(value ...interface{}) *StringNumberBoolOrTime {
+	snbt := NewStringNumberBoolOrTime(value...)
+	return &snbt
 }
 
 func (snbt StringNumberBoolOrTime) Value() interface{} {

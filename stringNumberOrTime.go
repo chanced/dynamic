@@ -6,15 +6,47 @@ import (
 	"time"
 )
 
-func NewStringNumberOrTime(v interface{}) (*StringNumberOrTime, error) {
-	snt := &StringNumberOrTime{
+// NewStringNumberOrTime returns a new StringNumberOrTime set to the first
+// value, if any.
+//
+// Types
+//
+// You can set String to any of the following:
+//  string, []byte, dynamic.String, fmt.Stringer, []string, *string,
+//  time.Time, *time.Time,
+//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
+//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
+//  float64, float32, complex128, complex64, *float64, *float32, *complex128, *complex64
+//  bool, *bool
+//  nil
+//
+// Warning
+//
+// This function fails silently. If the value provided is not an accepted type, the underlying value is set to nil.
+// If you need type checking, use:
+//  snt := dynamic.NewStringNumberOrTime()
+//  err := snt.Set("1")
+func NewStringNumberOrTime(value ...interface{}) StringNumberOrTime {
+	snt := StringNumberOrTime{
 		time:   Time{},
 		str:    String{},
 		number: Number{},
 	}
-	err := snt.Set(v)
-	return snt, err
+	if len(value) > 0 {
+		snt.Set(value[0])
+	}
+	return snt
 }
+
+// NewStringNumberOrTimePtr returns a pointer to a new NewStringNumberOrTimePtr
+//
+// See NewNewStringNumberOrTime for info & warnings
+func NewStringNumberOrTimePtr(value ...interface{}) *StringNumberOrTime {
+	snt := NewStringNumberOrTime(value...)
+	return &snt
+}
+
+// TODO: add format to the instances
 
 type StringNumberOrTime struct {
 	time   Time
@@ -35,13 +67,13 @@ func (snt StringNumberOrTime) Value() interface{} {
 
 // Set sets the value of StringNumberOrTime to value. The type of value can
 // be any of the following:
-//  time.Time, *time.Time
-//  string, *string
-//  json.Number, *json.Number
-//  float64, *float64, float32, *float32
-//  int, *int, int64, *int64, int32, *int32, int16, *int16, int8, *int8
-//  uint, *uint, uint64, *uint64, uint32, *uint32, uint16, *uint16, uint8, *uint8
-//  fmt.Stringer
+//
+//  string, []byte, dynamic.String, fmt.Stringer, []string, *string,
+//  time.Time, *time.Time,
+//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
+//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
+//  float64, float32, complex128, complex64, *float64, *float32, *complex128, *complex64
+//  bool, *bool
 //  nil
 //
 //
@@ -50,10 +82,13 @@ func (snt StringNumberOrTime) Value() interface{} {
 // Set returns an error if value is not one of the aforementioned types
 func (snt *StringNumberOrTime) Set(value interface{}) error {
 	snt.Clear()
+	if value == nil {
+		return nil
+	}
 	if v, ok := value.(*StringNumberOrTime); ok {
 		return snt.Set(v.Value())
 	}
-	if v, ok := value.(*StringNumberOrTime); ok {
+	if v, ok := value.(StringNumberOrTime); ok {
 		return snt.Set(v.Value())
 	}
 	if isNumber(value) {

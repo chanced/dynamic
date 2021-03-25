@@ -68,6 +68,9 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 
 func (t *Time) Set(value interface{}, layout ...string) error {
 	t.value = nil
+	if value == nil {
+		return nil
+	}
 	switch v := value.(type) {
 	case time.Time:
 		t.value = &v
@@ -78,8 +81,6 @@ func (t *Time) Set(value interface{}, layout ...string) error {
 		return t.Parse(v, layout...)
 	case *string:
 		return t.Parse(*v, layout...)
-	case fmt.Stringer:
-		return t.Parse(v.String(), layout...)
 	case Time:
 		if v.value == nil {
 			return nil
@@ -92,10 +93,13 @@ func (t *Time) Set(value interface{}, layout ...string) error {
 		}
 		tv := *v.value
 		t.value = &tv
-	case nil:
-		return nil
+	case fmt.Stringer:
+		return t.Parse(v.String(), layout...)
+
+	default:
+		return fmt.Errorf("%w <%T>", ErrInvalidType, value)
 	}
-	return ErrInvalidValue
+	return nil
 }
 
 func isTime(v interface{}) bool {

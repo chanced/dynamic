@@ -12,7 +12,8 @@ import (
 
 // errors
 var (
-	ErrInvalidValue = errors.New("invalid value")
+	ErrInvalidValue = errors.New("error: invalid value")
+	ErrInvalidType  = errors.New("error: invalid type")
 )
 
 // TODO: use Bool here

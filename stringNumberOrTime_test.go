@@ -20,14 +20,14 @@ func TestStringNumberOrTime(t *testing.T) {
 	p2 := SNT{}
 	now, err := time.Parse(dynamic.DefaultTimeLayout(), time.Now().Format(dynamic.DefaultTimeLayout()))
 	assert.NoError(err)
-	p1.V = dynamic.NewStringNumberOrTime()
+	p1.V = dynamic.NewStringNumberOrTimePtr()
 	err = p1.V.Set(now)
 	assert.NoError(err)
 	tv, isTime := p1.V.Time()
 	assert.True(isTime)
 	assert.Equal(now, tv)
 
-	p1.V = dynamic.NewStringNumberOrTime()
+	p1.V = dynamic.NewStringNumberOrTimePtr()
 	err = p1.V.Set(now.Format(dynamic.DefaultTimeLayout()))
 	assert.NoError(err)
 	tv, isTime = p1.V.Time()

@@ -2,29 +2,57 @@ package dynamic
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/tidwall/gjson"
 )
+
+var boolType = reflect.TypeOf(Bool{})
+
+// NewBool returns a new Bool value initialized to the first, if any, value
+// passed in.
+//
+// Types
+//
+// You can set String to any of the following:
+//  bool, dynamic.Bool, *bool, *dynamic.Bool
+//  string, []byte, fmt.Stringer, *string
+//  nil
+//
+// Warning
+//
+// This function fails silently. If value does not parse out to a bool, Bool's
+// value will be set to nil
+//
+// If you need error checks, use:
+//
+//  b := dynamic.Bool{}
+//  err := b.Set("true")
+func NewBool(value ...interface{}) Bool {
+	b := Bool{}
+	if len(value) > 0 {
+		b.Set(value[0])
+	}
+	return b
+}
+
+// NewBoolPtr returns a pointer to a new Bool
+//
+// See NewBool for valid options, usage and warnings
+func NewBoolPtr(value ...interface{}) *Bool {
+	b := NewBool(value...)
+	return &b
+}
 
 type Bool struct {
 	value *bool
 }
 
 var (
-	False = Bool{value: func() *bool {
-		v := false
-		return &v
-	}(),
-	}
-	True = Bool{value: func() *bool {
-		v := true
-		return &v
-	}(),
-	}
+	False = NewBool(false)
+	True  = NewBool(true)
 )
 
 func (b Bool) Value() interface{} {
@@ -38,37 +66,30 @@ func (b Bool) HasValue() bool {
 	return !b.IsNil()
 }
 
-var ErrInvalidBool = errors.New("invalid Bool")
+// var ErrInvalidBool = errors.New("invalid Bool")
 
 func (b Bool) Equal(value interface{}) bool {
 	if b.value == nil {
 		return value == nil
 	}
+	if value == nil {
+		return false
+	}
 	switch v := value.(type) {
 	case bool:
 		return *b.value == v
-	case *bool:
-		return *b.value == *v
 	case string:
-		s := strings.ToLower(v)
-		if *b.value {
-			return s == "true"
-		}
-		return s == "false"
-	case *string:
-		s := strings.ToLower(*v)
-		if *b.value {
-			return s == "true"
-		}
-		return s == "false"
 	case Bool:
 		return *b.value == *v.value
 	case *Bool:
-		return *b.value == *v.value
+	case *bool:
+		return *b.value == *v
+
 	}
 
 	return false
 }
+
 func (b Bool) MarshalJSON() ([]byte, error) {
 	if b.value == nil {
 		return json.Marshal(nil)
@@ -89,7 +110,7 @@ func (b *Bool) UnmarshalJSON(data []byte) error {
 	case gjson.Null:
 		return nil
 	}
-	return ErrInvalidBool
+	return &json.UnmarshalTypeError{Value: string(data), Type: boolType}
 }
 
 func parseBool(str string) (*bool, error) {
@@ -122,29 +143,26 @@ func (b *Bool) Parse(str string) error {
 
 func (b *Bool) Set(value interface{}) error {
 	b.value = nil
-	switch v := value.(type) {
-	case nil:
+	if value == nil {
 		return nil
+	}
+	switch v := value.(type) {
+	case bool:
+		b.value = &v
+	case Bool:
+		b.value = v.value
+	case string:
+		return b.Parse(v)
 	case []byte:
 		return b.Set(string(v))
 	case *bool:
 		b.value = v
-	case bool:
-		b.value = &v
-	case string:
-		return b.Parse(v)
+	case *Bool:
+		return b.Set(v.Value())
 	case *string:
 		return b.Parse(*v)
-	case Bool:
-		b.value = v.value
-	case *Bool:
-		if v == nil {
-			b.value = nil
-			return nil
-		}
-		return b.Set(v.Value())
 	default:
-		return fmt.Errorf("%w type: %t", ErrInvalidBool, value)
+		return fmt.Errorf("%w type: %T", ErrInvalidType, value)
 	}
 	return nil
 }

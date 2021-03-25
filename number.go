@@ -14,10 +14,34 @@ const maxJSONInt = 9007199254740991
 const smallestJSONFloat = float64(-9007199254740991)
 const maxJSONFloat = float64(9007199254740991)
 
-func NewNumber(val interface{}) (*Number, error) {
-	n := &Number{}
-	err := n.Set(val)
-	return n, err
+// NewNumber returns a new Number set to the first, if any, parameters.
+//
+// Types
+//
+// You can set String to any of the following:
+//  string, *string, json.Number, fmt.Stringer,
+//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
+//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
+//  float64, float32, *float64, *float32
+//
+//
+// Warning
+//
+// This function fails silently. If you pass in an invalid type, the underlying
+// value becomes nil. If you want error checking, use:
+func NewNumber(value ...interface{}) Number {
+	n := Number{}
+	if len(value) > 0 {
+		_ = n.Set(value[0])
+	}
+	return n
+}
+
+// NewNumberPtr returns a pointer to a new Number.
+// See NewNumber for information & warnings.
+func NewNumberPtr(value ...interface{}) *Number {
+	n := NewNumber(value...)
+	return &n
 }
 
 type Number struct {
@@ -30,22 +54,19 @@ func (n *Number) Set(value interface{}) error {
 	n.intValue = nil
 	n.floatValue = nil
 	n.floatValue = nil
+	if value == nil {
+		return nil
+	}
 	switch v := value.(type) {
 	case Number:
 		return n.Set(v.Value())
 	case *Number:
-		return n.Set(v.Value())
+		return n.Set(n.Value())
 	case float32:
 		f := float64(v)
 		n.floatValue = &f
-	case *float32:
-		f := float64(*v)
-		n.floatValue = &f
 	case float64:
 		n.floatValue = &v
-	case *float64:
-		f := *v
-		n.floatValue = &f
 	case int:
 		i := int64(v)
 		n.intValue = &i
@@ -55,77 +76,73 @@ func (n *Number) Set(value interface{}) error {
 	case int8:
 		i := int64(v)
 		n.intValue = &i
-	case *int8:
-		i := int64(*v)
-		n.intValue = &i
 	case int16:
 		i := int64(v)
-		n.intValue = &i
-	case *int16:
-		i := int64(*v)
 		n.intValue = &i
 	case int32:
 		i := int64(v)
 		n.intValue = &i
-	case *int32:
-		i := int64(*v)
-		n.intValue = &i
 	case int64:
 		n.intValue = &v
-	case *int64:
-		i := *v
-		n.intValue = &i
 	case uint8:
 		u := uint64(v)
-		n.uintValue = &u
-	case *uint8:
-		u := uint64(*v)
 		n.uintValue = &u
 	case uint16:
 		u := uint64(v)
 		n.uintValue = &u
-	case *uint16:
-		u := uint64(*v)
-		n.uintValue = &u
 	case uint32:
 		u := uint64(v)
 		n.uintValue = &u
-	case *uint32:
-		u := uint64(*v)
-		n.uintValue = &u
 	case uint64:
 		n.uintValue = &v
-	case *uint64:
-		u := *v
-		n.uintValue = &u
 	case string:
 		nv, err := parseNumberFromString(string(v))
 		if err != nil {
 			return err
 		}
 		return n.Set(nv)
-	case *string:
-		nv, err := parseNumberFromString(string(*v))
-		if err != nil {
-			return err
-		}
-		return n.Set(nv)
 	case json.Number:
-		nv, err := parseNumberFromString(string(v))
+		f, err := v.Float64()
 		if err != nil {
 			return err
 		}
-		return n.Set(nv)
+		return n.Set(f)
+	case []byte:
+		return n.Set(string(v))
 	case *json.Number:
-		nv, err := parseNumberFromString(string(*v))
+		return n.Set(*v)
+	case fmt.Stringer:
+		nv, err := parseNumberFromString(v.String())
 		if err != nil {
 			return err
 		}
 		return n.Set(nv)
-	case nil:
-		return nil
+	case *int64:
+		return n.Set(*v)
+	case *int32:
+		return n.Set(*v)
+	case *int16:
+		return n.Set(*v)
+	case *int8:
+		return n.Set(*v)
+	case *int:
+		return n.Set(*v)
+	case *uint64:
+		return n.Set(*v)
+	case *uint32:
+		return n.Set(*v)
+	case *uint16:
+		return n.Set(*v)
+	case *uint8:
+		return n.Set(*v)
+	case *uint:
+		return n.Set(*v)
+	case *float64:
+		return n.Set(*v)
+	case *float32:
+		return n.Set(*v)
 	default:
-		return fmt.Errorf("%w: %t is not a number", ErrInvalidValue, value)
+		return fmt.Errorf("%w: %T is not a number", ErrInvalidValue, value)
 	}
 	return nil
 }
