@@ -14,8 +14,8 @@ var (
 	falseBytes = []byte("false")
 )
 
-func (m RawJSON) MarshalJSON() ([]byte, error) {
-	return json.RawMessage(m).MarshalJSON()
+func (r RawJSON) MarshalJSON() ([]byte, error) {
+	return json.RawMessage(r).MarshalJSON()
 }
 func (r *RawJSON) UnmarshalJSON(data []byte) error {
 	if r == nil {
@@ -131,9 +131,9 @@ func (r RawJSON) IsNumber() bool {
 		return false
 	}
 }
-func (rm RawJSON) IsString() bool {
-	if len(rm) == 0 {
+func (r RawJSON) IsString() bool {
+	if len(r) == 0 {
 		return false
 	}
-	return rm[0] == '"'
+	return r[0] == '"'
 }
