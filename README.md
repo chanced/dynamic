@@ -4,9 +4,9 @@ Package dynamic is a collection of dynamic data types to supoprt [picker](https:
 
 ## TODO
 
-[] Accept dynamic.RawJSON & use data.UnquotedString
-[] More Tests
-[] Cleanup
+- [ ] Accept dynamic.RawJSON & use data.UnquotedString
+- [ ] More Tests
+- [ ] Cleanup
 
 ## License
 
