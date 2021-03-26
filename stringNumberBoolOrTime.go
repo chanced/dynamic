@@ -175,6 +175,14 @@ func (snbt *StringNumberBoolOrTime) IsBool() bool {
 	return ok
 }
 
+// IsEmptyString returns true if snbt is nil or an empty string
+func (snbt *StringNumberBoolOrTime) IsEmptyString() bool {
+	if snbt == nil || snbt.IsNil() {
+		return true
+	}
+	return snbt.String() == ""
+}
+
 func (snbt *StringNumberBoolOrTime) Bool() (bool, bool) {
 	if snbt.boolean.HasValue() {
 		return snbt.boolean.Bool()
