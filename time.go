@@ -3,27 +3,32 @@ package dynamic
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"time"
-
-	"github.com/tidwall/gjson"
 )
 
 var DefaultTimeLayouts = []string{time.RFC3339}
 var DefaultTimeLayout = func() string {
 	return DefaultTimeLayouts[0]
 }
+var typeTime = reflect.TypeOf(Time{})
 
 type Time struct {
-	value *time.Time
+	value  *time.Time
+	format *string
 }
 
-// Value returns the underlying value. If it is nil, nil is returned.
+func (t *Time) SetFormat(str string) {
+	t.format = &str
+}
+
+// Value returns the underlying time.Time pointer.
 func (t Time) Value() interface{} {
 	tv := t.value
 	if tv == nil {
 		return nil
 	}
-	return *tv
+	return tv
 }
 
 // Time returns the underlying value and true if not nil. If it is nil, a zero
@@ -48,22 +53,52 @@ func (t *Time) Clear() {
 
 func (t Time) MarshalJSON() ([]byte, error) {
 	if t.value == nil {
-		return json.Marshal(nil)
+		return Null, nil
 	}
-	return json.Marshal(t.String())
+	if t.format != nil {
+		return json.Marshal(t.value.Format(*t.format))
+	}
+	if DefaultTimeLayout() != time.RFC3339 && len(DefaultTimeLayout()) > 0 {
+		return json.Marshal(t.Format(DefaultTimeLayout()))
+	}
+	return json.Marshal(*t.value)
 }
 
 func (t *Time) UnmarshalJSON(data []byte) error {
 	t.value = nil
-	g := gjson.ParseBytes(data)
-	switch g.Type {
-	case gjson.Null:
-	case gjson.String:
-		return t.Parse(g.String())
-	default:
-		return ErrInvalidValue
+	r := RawJSON(data)
+	if r.IsNull() {
+		return nil
 	}
-	return nil
+
+	if len(DefaultTimeLayouts) == 1 && DefaultTimeLayout() == time.RFC3339 {
+		var tt time.Time
+		err := json.Unmarshal(data, &tt)
+		if err != nil {
+			return err
+		}
+		t.value = &tt
+		return nil
+	}
+	if r.IsString() && !r.IsMalformed() {
+		var err error
+		for _, layout := range DefaultTimeLayouts {
+			tt, e := time.Parse(layout, r.String())
+			if e != nil {
+				if err != nil {
+					err = e
+				}
+				continue
+			}
+			t.value = &tt
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return &json.UnmarshalTypeError{Value: string(data), Type: typeTime}
+
 }
 
 func (t *Time) Set(value interface{}, layout ...string) error {

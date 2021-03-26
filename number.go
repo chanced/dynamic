@@ -4,15 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"reflect"
 	"strconv"
-
-	"github.com/tidwall/gjson"
 )
 
-const smallestJSONInt = -9007199254740991
-const maxJSONInt = 9007199254740991
-const smallestJSONFloat = float64(-9007199254740991)
-const maxJSONFloat = float64(9007199254740991)
+var typeNumber = reflect.TypeOf(Number{})
+
+const (
+	smallestJSONInt   = -9007199254740991
+	maxJSONInt        = 9007199254740991
+	smallestJSONFloat = float64(-9007199254740991)
+	maxJSONFloat      = float64(9007199254740991)
+)
 
 // NewNumber returns a new Number set to the first, if any, parameters.
 //
@@ -166,6 +169,7 @@ func (n Number) Float() (float64, bool) {
 	if n.IsNil() {
 		return 0, false
 	}
+
 	if n.floatValue != nil {
 		return *n.floatValue, true
 	}
@@ -255,17 +259,23 @@ func (n *Number) Value() interface{} {
 
 func (n *Number) UnmarshalJSON(data []byte) error {
 	n.Clear()
-	g := gjson.ParseBytes(data)
-	switch g.Type {
-	case gjson.Null:
-	case gjson.Number:
-		f := g.Float()
-		return n.Set(f)
-	case gjson.String:
-		return n.Set(g.String())
+	r := RawJSON(data)
+	var err error
+	var v interface{}
+	switch {
+	case r.IsNull():
+	case r.IsNumber():
+		v, err = parseNumberFromString(r.String())
+	case r.IsString():
+		v, err = parseNumberFromString(r.String())
 	default:
-		// TODO: better errors
-		return ErrInvalidValue
+		return &json.UnmarshalTypeError{Value: r.String(), Type: typeNumber}
+	}
+	if err == nil {
+		err = n.Set(v)
+	}
+	if err != nil {
+		return &json.UnmarshalTypeError{Value: r.String(), Type: typeNumber}
 	}
 	return nil
 }

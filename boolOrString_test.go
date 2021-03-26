@@ -25,8 +25,8 @@ func TestBoolOrString(t *testing.T) {
 	err := json.Unmarshal(raw1, &s1)
 	assert.NoError(err)
 
-	assert.Equal(dynamic.BoolOrString("true"), s1.V1)
-	assert.Equal(dynamic.BoolOrString("truth"), s1.V2)
+	assert.Equal(dynamic.NewBoolOrString("true"), s1.V1)
+	assert.Equal(dynamic.NewBoolOrString("truth"), s1.V2)
 
 	m1, err := json.Marshal(s1)
 	assert.NoError(err)
@@ -40,8 +40,8 @@ func TestBoolOrString(t *testing.T) {
 	err = json.Unmarshal(raw2, &s2)
 	assert.NoError(err)
 
-	assert.Equal(dynamic.BoolOrString("false"), s2.V1)
-	assert.Equal(dynamic.BoolOrString("STRVAL"), s2.V2)
+	assert.Equal(dynamic.NewBoolOrString("false"), s2.V1)
+	assert.Equal(dynamic.NewBoolOrString("STRVAL"), s2.V2)
 
 	m2, err := json.Marshal(s2)
 	assert.NoError(err)

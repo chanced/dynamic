@@ -1,13 +1,10 @@
 package dynamic
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
-
-	"github.com/tidwall/gjson"
+	"reflect"
 )
 
 // errors
@@ -15,113 +12,184 @@ var (
 	ErrInvalidValue = errors.New("error: invalid value")
 	ErrInvalidType  = errors.New("error: invalid type")
 )
+var typeBoolOrString = reflect.TypeOf(BoolOrString{})
 
-// TODO: use Bool here
-
-// BoolOrString is a dynamic type that is either a string or a bool for json encoding.
+// BoolOrString is a dynamic type that is a string, bool, or nil.
 // It stores the value as a string and decodes json into either a bool or a string
-type BoolOrString string
-
-// MarshalJSON satisfies json.Marshaler interface
-func (bos BoolOrString) MarshalJSON() ([]byte, error) {
-
-	v := strings.ToLower(string(bos))
-	buf := &bytes.Buffer{}
-	enc := json.NewEncoder(buf)
-	var err error
-	switch v {
-	case "true":
-		err = enc.Encode(true)
-		return buf.Bytes(), err
-	case "false":
-		err = enc.Encode(false)
-	default:
-		err = enc.Encode(string(bos))
-	}
-	return buf.Bytes(), err
+type BoolOrString struct {
+	boolean      Bool
+	str          String
+	encodeToNull bool
 }
 
-// UnmarshalJSON satisfies json.Unmarshaler interface
-func (bos *BoolOrString) UnmarshalJSON(data []byte) error {
-	r := gjson.ParseBytes(data)
-	t := r.Type
-	switch t {
-	case gjson.False:
-		*bos = "false"
-	case gjson.True:
-		*bos = "true"
-	case gjson.String:
-		*bos = BoolOrString(r.String())
-	case gjson.Null:
-		*bos = ""
-	default:
-		return fmt.Errorf("can not unmarshal %v into BoolOrString", r.Num)
+func (bs *BoolOrString) EncodeToNull() *BoolOrString {
+	bs.encodeToNull = true
+	return bs
+}
+func (bs *BoolOrString) EncodeToEmptyString() *BoolOrString {
+	bs.encodeToNull = false
+	return bs
+}
+func (bs *BoolOrString) Reference() *BoolOrString {
+	return bs
+}
+func (bs *BoolOrString) Dereference() BoolOrString {
+	if bs == nil {
+		return BoolOrString{}
 	}
-	return nil
+	return *bs
 }
 
-// Set sets the value of BoolOrString to v. Allowed types are: bool, string, or fmt.Stringer
-func (bos *BoolOrString) Set(v interface{}) error {
-	switch t := v.(type) {
-	case string:
-		str := strings.ToLower(t)
-		if str == "true" || str == "false" {
-			*bos = BoolOrString(str)
-			return nil
-		}
-		*bos = BoolOrString(t)
+func (bs BoolOrString) MarshalJSON() ([]byte, error) {
+	if bs.IsNil() {
+		return Null, nil
+	}
+
+	fmt.Println("bs.IsBool():", bs.IsBool(), "for", bs.String())
+	if bs.IsBool() {
+		b, _ := bs.Bool()
+		return json.Marshal(b)
+	}
+	return json.Marshal(bs.String())
+}
+
+func (bs *BoolOrString) UnmarshalJSON(data []byte) error {
+	bs.boolean = Bool{}
+	bs.str = String{}
+	r := RawJSON(data)
+	if r.IsNull() {
 		return nil
-	case bool:
-		if t {
-			*bos = "true"
-		} else {
-			*bos = "false"
+	}
+	if r.IsString() {
+		var v string
+		err := json.Unmarshal(data, &v)
+		if err != nil {
+			return err
 		}
+		bs.str.Set(v)
 		return nil
-	case BoolOrString:
-		*bos = t
-	case *BoolOrString:
-		*bos = *t
-	case fmt.Stringer:
-		return bos.Set(t.String())
 	}
-	return fmt.Errorf("%w for BoolOrString: expected bool, string, or fmt.Stringer", ErrInvalidValue)
-}
-
-// IsBool returns true if it is a bool or false if it is a string
-func (bos BoolOrString) IsBool() bool {
-	return bos.Bool() != nil
-}
-
-// IsString returns true if it is a string or false if it is a boolean
-func (bos BoolOrString) IsString() bool {
-	return !bos.IsBool()
-}
-
-// Bool returns a pointer boolean. If the value is a boolean,
-// it returns true or false otherwise nil is returned
-func (bos BoolOrString) Bool() *bool {
-	str := strings.ToLower(string(bos))
-	if str == "true" {
-		t := true
-		return &t
-	} else if str == "false" {
-		f := false
-		return &f
+	if r.IsBool() {
+		var v bool
+		err := json.Unmarshal(data, &v)
+		if err != nil {
+			return err
+		}
+		bs.boolean.Set(v)
+		return nil
 	}
-	return nil
+	return &json.UnmarshalTypeError{Value: string(data), Type: typeBoolOrString}
 }
 
-// IsTrue reports whether or not the value is a boolean and "true"
-func (bos BoolOrString) IsTrue() bool {
-	return bos.Bool() != nil && *bos.Bool()
+// Set sets the BoolOrString's value
+//
+//
+// Valid value types:
+//
+// You can set String to any of the following:
+//  string, []byte, dynamic.String, dynamic.Bool, fmt.Stringer, []string, *string,
+//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
+//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
+//  float64, float32, complex128, complex64, *float64, *float32, *complex128, *complex64
+//  bool, *bool
+//  nil
+func (bs *BoolOrString) Set(value interface{}) error {
+	bs.boolean = Bool{}
+	bs.str = String{}
+	err := bs.boolean.Set(value)
+	if err == nil {
+		return nil
+	}
+	return bs.str.Set(value)
 }
 
-// IsFalse reports whether or not the value is a boolean and "false"
-func (bos BoolOrString) IsFalse() bool {
-	return bos.Bool() != nil && !*bos.Bool()
+func (bs BoolOrString) String() string {
+	if !bs.str.IsNil() {
+		return bs.str.String()
+	}
+	if !bs.boolean.IsNil() {
+		return bs.boolean.String()
+	}
+	return ""
 }
 
-func (bos BoolOrString) String() string {
-	return string(bos)
+func (bs *BoolOrString) IsNil() bool {
+	if bs == nil {
+		return true
+	}
+	return bs.str.IsNil() && bs.boolean.IsNil()
+}
+
+func (bs *BoolOrString) IsEmpty() bool {
+	if bs == nil {
+		return true
+	}
+	return bs.boolean.IsNil() && bs.str.IsEmpty()
+}
+
+func (bs *BoolOrString) Bool() (value bool, isBool bool) {
+	if bs == nil {
+		return false, false
+	}
+	if !bs.IsNil() && !bs.boolean.IsNil() {
+		fmt.Println(bs.String(), "!bs.IsNil() && !bs.boolean.IsNil()", *bs.boolean.value)
+
+		return *bs.boolean.value, true
+	}
+	if !bs.str.IsEmpty() {
+		v, err := bs.str.Bool()
+		if err == nil {
+			return v, true
+		}
+	}
+	return false, false
+}
+
+func (bs *BoolOrString) IsBool() bool {
+	if bs == nil {
+		return false
+	}
+	_, is := bs.Bool()
+	return is
+}
+
+// NewBoolOrString returns a new BoolOrString
+// It panics if value can not be interpreted as a bool or a string
+//
+// Valid value types
+//
+// You can set String to any of the following:
+//
+//  string, []byte, dynamic.String, dynamic.Bool, fmt.Stringer, []string, *string,
+//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
+//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
+//  float64, float32, complex128, complex64, *float64, *float32, *complex128, *complex64
+//  bool, *bool
+//  nil
+func NewBoolOrString(value ...interface{}) BoolOrString {
+	bs := BoolOrString{}
+	if len(value) > 0 {
+		err := bs.Set(value[0])
+		if err != nil {
+			panic(err)
+		}
+	}
+	return bs
+}
+
+// NewBoolOrStringPtr returns a pointer to a new BoolOrString
+//
+// It panics if value can not be interpreted as a bool or a string
+// Valid value types:
+//
+// You can set String to any of the following:
+//  string, []byte, dynamic.String, dynamic.Bool, fmt.Stringer, []string, *string,
+//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
+//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
+//  float64, float32, complex128, complex64, *float64, *float32, *complex128, *complex64
+//  bool, *bool
+//  nil
+func NewBoolOrStringPtr(value ...interface{}) *BoolOrString {
+	bs := NewBoolOrString()
+	return bs.Reference()
 }

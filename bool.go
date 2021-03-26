@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-
-	"github.com/tidwall/gjson"
 )
 
 var boolType = reflect.TypeOf(Bool{})
+var tru = true
+var fal = false
 
 // NewBool returns a new Bool value initialized to the first, if any, value
 // passed in.
@@ -92,25 +92,35 @@ func (b Bool) Equal(value interface{}) bool {
 
 func (b Bool) MarshalJSON() ([]byte, error) {
 	if b.value == nil {
-		return json.Marshal(nil)
+		return Null, nil
 	}
 	return json.Marshal(*b.value)
 }
 func (b *Bool) UnmarshalJSON(data []byte) error {
-	res := gjson.ParseBytes(data)
-	switch res.Type {
-	case gjson.False:
-		*b = False
+	b.value = nil
+	r := RawJSON(data)
+	switch {
+	case r.IsTrue():
+		t := true
+		b.value = &t
+	case r.IsFalse():
+		f := false
+		b.value = &f
+	case r.IsNull():
 		return nil
-	case gjson.True:
-		*b = True
-		return nil
-	case gjson.String:
-		return b.Parse(string(data))
-	case gjson.Null:
-		return nil
+	case r.IsString():
+		if r.String() == "" {
+			return nil
+		}
+		v, err := strconv.ParseBool(r.String())
+		if err != nil {
+			return &json.UnmarshalTypeError{Value: r.String(), Type: boolType}
+		}
+		b.value = &v
+	default:
+		return &json.UnmarshalTypeError{Value: r.String(), Type: boolType}
 	}
-	return &json.UnmarshalTypeError{Value: string(data), Type: boolType}
+	return nil
 }
 
 func parseBool(str string) (*bool, error) {
@@ -191,6 +201,9 @@ func (b *Bool) String() string {
 }
 
 func (b *Bool) IsNil() bool {
+	return b == nil || b.value == nil
+}
+func (b *Bool) IsNull() bool {
 	return b == nil || b.value == nil
 }
 

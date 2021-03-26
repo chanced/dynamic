@@ -1,94 +1,125 @@
 package dynamic
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	"github.com/tidwall/gjson"
+	"reflect"
 )
 
 var (
-	ErrIndexOutOfBounds = errors.New("index out of bounds")
+	ErrIndexOutOfBounds                          = errors.New("index out of bounds")
+	Done                                         = errors.New("done")
+	AlwaysMarshalStringOrArrayOfStringsIntoArray = true
 )
 
 type StringOrArrayOfStrings []string
 
-// MarshalJSON satisfies json.Marshaler interface
-func (soas StringOrArrayOfStrings) MarshalJSON() ([]byte, error) {
-	buf := &bytes.Buffer{}
-	enc := json.NewEncoder(buf)
+var typeStringOrArrayOfStrings = reflect.TypeOf(StringOrArrayOfStrings{})
 
-	if soas == nil || len(soas) == 0 {
+// MarshalJSON satisfies json.Marshaler interface
+func (sas StringOrArrayOfStrings) MarshalJSON() ([]byte, error) {
+	if sas == nil || len(sas) == 0 {
 		return []byte{}, nil
 	}
-	var err error
-	if len(soas) == 1 {
-		err = enc.Encode(soas[1])
-
-	} else {
-		err = enc.Encode(soas)
+	if len(sas) == 1 && !AlwaysMarshalStringOrArrayOfStringsIntoArray {
+		return json.Marshal(sas[0])
 	}
+	return json.Marshal(sas)
 
-	return buf.Bytes(), err
+}
+func (sas *StringOrArrayOfStrings) IsNil() bool {
+	return sas == nil || *sas == nil
 }
 
-// UnmarshalJSON satisfies json.Unmarshaler interface
-func (soas *StringOrArrayOfStrings) UnmarshalJSON(data []byte) error {
-	r := gjson.ParseBytes(data)
-	ar := r.Array()
-	if len(ar) > 0 {
-		*soas = StringOrArrayOfStrings{}
-	} else {
+func (sas *StringOrArrayOfStrings) IsEmpty() bool {
+	return sas == nil || len(*sas) == 0
+}
+
+// Iterate calls fn for each value of sas until an error is returned. If the
+// error returned is dynamic.Done, nil is returned to the caller. Otherwise the
+// error returned from fn is passed along.
+func (sas *StringOrArrayOfStrings) Iterate(fn func(string) error) error {
+	if sas == nil {
 		return nil
 	}
-	for _, v := range ar {
-		if r.Type == gjson.String {
-			*soas = append(*soas, v.String())
-			continue
+	if sas.IsEmpty() {
+		return nil
+	}
+	for _, v := range *sas {
+		err := fn(v)
+		if err != nil && err != Done {
+			return err
 		}
-		if r.Type == gjson.Null {
-			*soas = append(*soas, "")
-			continue
+		if err == Done {
+			return nil
 		}
-		return fmt.Errorf("can not unmarshal %v into StringOrArrayOfStrings", r.Raw)
 	}
 	return nil
 }
 
-func (soas *StringOrArrayOfStrings) Set(v interface{}) error {
+// UnmarshalJSON satisfies json.Unmarshaler interface
+func (sas *StringOrArrayOfStrings) UnmarshalJSON(data []byte) error {
+	b := RawJSON(data)
+
+	if b.IsArray() {
+		var v []string
+		err := json.Unmarshal(b, &v)
+		if err != nil {
+			return err
+		}
+		*sas = v
+		return nil
+	}
+	if b.IsString() {
+		var v string
+		err := json.Unmarshal(b, &v)
+		if err != nil {
+			return err
+		}
+		*sas = append((*sas)[0:0], v)
+		return nil
+	}
+	if b.IsNull() {
+		*sas = nil
+		return nil
+	}
+	return &json.UnmarshalTypeError{}
+
+}
+
+func (sas *StringOrArrayOfStrings) Set(v interface{}) error {
 	switch t := v.(type) {
 	case string:
-		*soas = []string{t}
+		*sas = []string{t}
 	case []string:
-		*soas = t
+		*sas = t
 	case StringOrArrayOfStrings:
-		*soas = t
+		*sas = t
 	case *StringOrArrayOfStrings:
-		*soas = *t
+		*sas = *t
 	case fmt.Stringer:
-		*soas = []string{t.String()}
+		*sas = []string{t.String()}
 	}
 	return ErrInvalidValue
 }
 
-func (soas StringOrArrayOfStrings) GetIndex(i int) (string, error) {
-	if len(soas) > i || i < 0 {
+func (sas StringOrArrayOfStrings) GetIndex(i int) (string, error) {
+	if len(sas) > i || i < 0 {
 		return "", ErrIndexOutOfBounds
 	}
-	return soas[i], nil
+	return sas[i], nil
 }
 
-func (soas *StringOrArrayOfStrings) Add(v string) {
-	if soas == nil {
-		*soas = StringOrArrayOfStrings{}
+func (sas *StringOrArrayOfStrings) Add(v string) {
+	if sas == nil {
+		*sas = StringOrArrayOfStrings{}
 	}
-	*soas = append(*soas, v)
+	*sas = append(*sas, v)
 }
 
-func (soas StringOrArrayOfStrings) IndexOf(v string) int {
-	for i, e := range soas {
+func (sas StringOrArrayOfStrings) IndexOf(v string) int {
+	for i, e := range sas {
 		if e == v {
 			return i
 		}
@@ -96,13 +127,13 @@ func (soas StringOrArrayOfStrings) IndexOf(v string) int {
 	return -1
 }
 
-func (soas *StringOrArrayOfStrings) RemoveIndex(i int) error {
-	if i > len(*soas) || i < 0 {
+func (sas *StringOrArrayOfStrings) RemoveIndex(i int) error {
+	if i > len(*sas) || i < 0 {
 		return ErrIndexOutOfBounds
 	}
-	if *soas == nil {
-		*soas = StringOrArrayOfStrings{}
+	if *sas == nil {
+		*sas = StringOrArrayOfStrings{}
 	}
-	*soas = append((*soas)[:i], (*soas)[i+1:]...)
+	*sas = append((*sas)[:i], (*sas)[i+1:]...)
 	return nil
 }
