@@ -97,9 +97,9 @@ func (snbt *StringNumberBoolOrTime) Set(value interface{}) error {
 
 }
 
-func (snbt *StringNumberBoolOrTime) MarshalJSON() ([]byte, error) {
+func (snbt StringNumberBoolOrTime) MarshalJSON() ([]byte, error) {
 	if snbt.IsNil() {
-		return json.Marshal(nil)
+		return Null, nil
 	}
 	if snbt.number.HasValue() {
 		return snbt.number.MarshalJSON()

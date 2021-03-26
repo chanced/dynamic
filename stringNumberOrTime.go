@@ -102,7 +102,7 @@ func (snt *StringNumberOrTime) Set(value interface{}) error {
 
 }
 
-func (snt *StringNumberOrTime) MarshalJSON() ([]byte, error) {
+func (snt StringNumberOrTime) MarshalJSON() ([]byte, error) {
 	if snt.IsNil() {
 		return json.Marshal(nil)
 	}
