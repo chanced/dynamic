@@ -12,7 +12,6 @@ type RawJSON []byte
 var (
 	trueBytes  = []byte("true")
 	falseBytes = []byte("false")
-	commaBytes = []byte(",")
 )
 
 func (m RawJSON) MarshalJSON() ([]byte, error) {
@@ -25,7 +24,13 @@ func (r *RawJSON) UnmarshalJSON(data []byte) error {
 	*r = append((*r)[0:0], data...)
 	return nil
 }
+func (r RawJSON) IsObject() bool {
+	if len(r) == 0 {
+		return false
+	}
+	return r[0] == '{'
 
+}
 func (r RawJSON) IsMalformed() bool {
 	if len(r) == 0 {
 		return true
