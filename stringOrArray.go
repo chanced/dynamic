@@ -8,9 +8,8 @@ import (
 )
 
 var (
-	ErrIndexOutOfBounds                          = errors.New("index out of bounds")
-	Done                                         = errors.New("done")
-	AlwaysMarshalStringOrArrayOfStringsIntoArray = true
+	ErrIndexOutOfBounds = errors.New("index out of bounds")
+	Done                = errors.New("done")
 )
 
 type StringOrArrayOfStrings []string
@@ -22,7 +21,7 @@ func (sas StringOrArrayOfStrings) MarshalJSON() ([]byte, error) {
 	if sas == nil || len(sas) == 0 {
 		return []byte{}, nil
 	}
-	if len(sas) == 1 && !AlwaysMarshalStringOrArrayOfStringsIntoArray {
+	if len(sas) == 1 {
 		return json.Marshal(sas[0])
 	}
 	return json.Marshal(sas)
