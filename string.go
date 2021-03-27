@@ -3,14 +3,11 @@ package dynamic
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
 )
-
-var typeString = reflect.TypeOf(String{})
 
 type String struct {
 	value                  *string
@@ -175,18 +172,10 @@ func (s *String) ReplaceAll(old interface{}, new interface{}) *String {
 
 }
 
-// Split slices s into all substrings separated by sep and returns a slice of
-// the substrings between those separators.
+// SplitN slices s into substrings separated by sep and returns a slice of the
+// substrings between those separators.
 //
-// If s does not contain sep and sep is not empty, Split returns a
-// slice of length 1 whose only element is s.
-//
-// If sep is empty, Split splits after each UTF-8 sequence. If both s
-// and sep are empty, Split returns an empty slice.
-//
-// It is equivalent to SplitN with a count of -1.
-//
-// SplitN panics if sep cannot be formatted as a string
+// The count determines the number of substrings to return:
 func (s *String) SplitN(sep interface{}, n int) []string {
 	if s == nil || s.IsEmpty() {
 		return []string{}
@@ -199,7 +188,7 @@ func (s *String) SplitN(sep interface{}, n int) []string {
 	if ptr == nil || *ptr == "" {
 		return []string{s.String()}
 	}
-	return strings.Split(s.String(), *ptr)
+	return strings.SplitN(s.String(), *ptr, n)
 }
 
 // Split slices s into all substrings separated by sep and returns a slice of
@@ -677,18 +666,6 @@ func (s *String) UnmarshalJSON(data []byte) error {
 		return &json.UnmarshalTypeError{}
 	}
 	return nil
-}
-
-func tryxStringFormat(value interface{}, layouts []string, fn func(value *string, e error) bool) {
-	if len(layouts) > 0 {
-		val, err := formatString(value)
-		fn(val, err)
-		return
-	}
-	for _, layout := range layouts {
-		val, err := formatString(value, layout)
-		fn(val, err)
-	}
 }
 
 func formatString(value interface{}, layout ...string) (*string, error) {
