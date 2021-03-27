@@ -26,23 +26,18 @@ const (
 //  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
 //  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
 //  float64, float32, *float64, *float32
-//
-//
-// Warning
-//
-// This function fails silently. If you pass in an invalid type, the underlying
-// value becomes nil. If you want error checking, use:
-func NewNumber(value interface{}) Number {
+func NewNumber(value interface{}) (Number, error) {
 	n := Number{}
-	n.Set(value)
-	return n
+	err := n.Set(value)
+	return n, err
 }
 
 // NewNumberPtr returns a pointer to a new Number.
 // See NewNumber for information & warnings.
-func NewNumberPtr(value interface{}) *Number {
-	n := NewNumber(value)
-	return &n
+func NewNumberPtr(value interface{}) (*Number, error) {
+	n, err := NewNumber(value)
+
+	return &n, err
 }
 
 type Number struct {

@@ -10,7 +10,8 @@ import (
 
 func TestNumber(t *testing.T) {
 	assert := require.New(t)
-	n := dynamic.NewNumber(34.34)
+	n, err := dynamic.NewNumber(34.34)
+	assert.NoError(err)
 
 	f, ok := n.Float()
 	assert.True(ok, "should be able to retrieve a float value")
