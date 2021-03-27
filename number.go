@@ -32,18 +32,16 @@ const (
 //
 // This function fails silently. If you pass in an invalid type, the underlying
 // value becomes nil. If you want error checking, use:
-func NewNumber(value ...interface{}) Number {
+func NewNumber(value interface{}) Number {
 	n := Number{}
-	if len(value) > 0 {
-		_ = n.Set(value[0])
-	}
+	n.Set(value)
 	return n
 }
 
 // NewNumberPtr returns a pointer to a new Number.
 // See NewNumber for information & warnings.
-func NewNumberPtr(value ...interface{}) *Number {
-	n := NewNumber(value...)
+func NewNumberPtr(value interface{}) *Number {
+	n := NewNumber(value)
 	return &n
 }
 

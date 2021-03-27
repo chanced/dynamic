@@ -8,8 +8,6 @@ import (
 )
 
 var boolType = reflect.TypeOf(Bool{})
-var tru = true
-var fal = false
 
 // NewBool returns a new Bool value initialized to the first, if any, value
 // passed in.

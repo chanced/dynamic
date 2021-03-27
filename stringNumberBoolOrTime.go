@@ -15,8 +15,8 @@ type StringNumberBoolOrTime struct {
 	boolean Bool
 }
 
-// NewStringNumberBoolOrTime returns a new StringNumberBoolOrTime set to the first
-// value, if any.
+// NewStringNumberBoolOrTime returns a new StringNumberBoolOrTime set to the
+// first value, if any.
 //
 // Types
 //
@@ -31,25 +31,26 @@ type StringNumberBoolOrTime struct {
 //
 // Warning
 //
-// This function fails silently. If the value provided is not an accepted type, the underlying value is set to nil.
-// If you need type checking, use:
-//  snbt := dynamic.NewStringNumberBoolOrTime()
-//  err := snbt.Set("tru")
-func NewStringNumberBoolOrTime(value ...interface{}) StringNumberBoolOrTime {
+// This function panics if value is not an accepted type. If you need error
+// checking, use:
+//  v := &dynamic.StringNumberBoolOrTime{}
+//  err := v.Set(myType)
+func NewStringNumberBoolOrTime(value interface{}) StringNumberBoolOrTime {
 	snbt := StringNumberBoolOrTime{
 		time:    Time{},
 		str:     String{},
 		number:  Number{},
 		boolean: Bool{},
 	}
-	if len(value) > 0 {
-		snbt.Set(value[0])
+	err := snbt.Set(value)
+	if err != nil {
+		panic(err)
 	}
 	return snbt
 }
 
-func NewStringNumberBoolOrTimePtr(value ...interface{}) *StringNumberBoolOrTime {
-	snbt := NewStringNumberBoolOrTime(value...)
+func NewStringNumberBoolOrTimePtr(value interface{}) *StringNumberBoolOrTime {
+	snbt := NewStringNumberBoolOrTime(value)
 	return &snbt
 }
 

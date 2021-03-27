@@ -12,7 +12,47 @@ var (
 	ErrInvalidValue = errors.New("error: invalid value")
 	ErrInvalidType  = errors.New("error: invalid type")
 )
+
 var typeBoolOrString = reflect.TypeOf(BoolOrString{})
+
+// NewBoolOrString returns a new BoolOrString
+// It panics if value can not be interpreted as a bool or a string
+//
+// Valid value types
+//
+// You can set String to any of the following:
+//
+//  string, []byte, dynamic.String, dynamic.Bool, fmt.Stringer, []string, *string,
+//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
+//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
+//  float64, float32, complex128, complex64, *float64, *float32, *complex128, *complex64
+//  bool, *bool
+//  nil
+func NewBoolOrString(value interface{}) BoolOrString {
+	bs := BoolOrString{}
+	err := bs.Set(value)
+	if err != nil {
+		panic(err)
+	}
+	return bs
+}
+
+// NewBoolOrStringPtr returns a pointer to a new BoolOrString
+//
+// It panics if value can not be interpreted as a bool or a string
+// Valid value types:
+//
+// You can set String to any of the following:
+//  string, []byte, dynamic.String, dynamic.Bool, fmt.Stringer, []string, *string,
+//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
+//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
+//  float64, float32, complex128, complex64, *float64, *float32, *complex128, *complex64
+//  bool, *bool
+//  nil
+func NewBoolOrStringPtr(value interface{}) *BoolOrString {
+	bs := NewBoolOrString(value)
+	return bs.Reference()
+}
 
 // BoolOrString is a dynamic type that is a string, bool, or nil.
 // It stores the value as a string and decodes json into either a bool or a string
@@ -151,45 +191,4 @@ func (bs *BoolOrString) IsBool() bool {
 	}
 	_, is := bs.Bool()
 	return is
-}
-
-// NewBoolOrString returns a new BoolOrString
-// It panics if value can not be interpreted as a bool or a string
-//
-// Valid value types
-//
-// You can set String to any of the following:
-//
-//  string, []byte, dynamic.String, dynamic.Bool, fmt.Stringer, []string, *string,
-//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
-//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
-//  float64, float32, complex128, complex64, *float64, *float32, *complex128, *complex64
-//  bool, *bool
-//  nil
-func NewBoolOrString(value ...interface{}) BoolOrString {
-	bs := BoolOrString{}
-	if len(value) > 0 {
-		err := bs.Set(value[0])
-		if err != nil {
-			panic(err)
-		}
-	}
-	return bs
-}
-
-// NewBoolOrStringPtr returns a pointer to a new BoolOrString
-//
-// It panics if value can not be interpreted as a bool or a string
-// Valid value types:
-//
-// You can set String to any of the following:
-//  string, []byte, dynamic.String, dynamic.Bool, fmt.Stringer, []string, *string,
-//  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
-//  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8
-//  float64, float32, complex128, complex64, *float64, *float32, *complex128, *complex64
-//  bool, *bool
-//  nil
-func NewBoolOrStringPtr(value ...interface{}) *BoolOrString {
-	bs := NewBoolOrString()
-	return bs.Reference()
 }

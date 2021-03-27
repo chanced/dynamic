@@ -30,16 +30,16 @@ type String struct {
 //
 // Warning
 //
-// This function fails silently. If you pass in an invalid type, the underlying
-// value becomes nil. If you want error checking, use:
+// This function panics if value is not one of the above. If you need error checking, use:
 //  str := dynamic.String{}
 //  err := str.Set("value")
 // Alternatively, you can check if it is nil:
 //  _ = dynamic.NewString().IsNil() // true
-func NewString(value ...interface{}) String {
+func NewString(value interface{}) String {
 	str := String{}
-	if len(value) > 0 {
-		_ = str.Set(value[0])
+	err := str.Set(value)
+	if err != nil {
+		panic(err)
 	}
 	return str
 }
@@ -47,8 +47,8 @@ func NewString(value ...interface{}) String {
 // NewStringPtr returns a pointer to a new String
 //
 // See NewString for information on valid values and usage
-func NewStringPtr(value ...interface{}) *String {
-	s := NewString(value...)
+func NewStringPtr(value interface{}) *String {
+	s := NewString(value)
 	return &s
 }
 func (s *String) Reference() *String {

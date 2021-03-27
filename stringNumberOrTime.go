@@ -22,18 +22,18 @@ import (
 //
 // Warning
 //
-// This function fails silently. If the value provided is not an accepted type, the underlying value is set to nil.
-// If you need type checking, use:
-//  snt := dynamic.NewStringNumberOrTime()
-//  err := snt.Set("1")
-func NewStringNumberOrTime(value ...interface{}) StringNumberOrTime {
+// This function panics iff the value provided is not an accepted type.
+//
+// If you need type checking, use Set
+func NewStringNumberOrTime(value interface{}) StringNumberOrTime {
 	snt := StringNumberOrTime{
 		time:   Time{},
 		str:    String{},
 		number: Number{},
 	}
-	if len(value) > 0 {
-		snt.Set(value[0])
+	err := snt.Set(value)
+	if err != nil {
+		panic(err)
 	}
 	return snt
 }
@@ -41,8 +41,8 @@ func NewStringNumberOrTime(value ...interface{}) StringNumberOrTime {
 // NewStringNumberOrTimePtr returns a pointer to a new NewStringNumberOrTimePtr
 //
 // See NewNewStringNumberOrTime for info & warnings
-func NewStringNumberOrTimePtr(value ...interface{}) *StringNumberOrTime {
-	snt := NewStringNumberOrTime(value...)
+func NewStringNumberOrTimePtr(value interface{}) *StringNumberOrTime {
+	snt := NewStringNumberOrTime(value)
 	return &snt
 }
 

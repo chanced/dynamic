@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
 )
 
 var (
@@ -14,15 +13,10 @@ var (
 
 type StringOrArrayOfStrings []string
 
-var typeStringOrArrayOfStrings = reflect.TypeOf(StringOrArrayOfStrings{})
-
 // MarshalJSON satisfies json.Marshaler interface
 func (sas StringOrArrayOfStrings) MarshalJSON() ([]byte, error) {
 	if sas == nil || len(sas) == 0 {
 		return []byte{}, nil
-	}
-	if len(sas) == 1 {
-		return json.Marshal(sas[0])
 	}
 	return json.Marshal(sas)
 

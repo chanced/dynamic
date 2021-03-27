@@ -38,5 +38,4 @@ func TestBool(t *testing.T) {
 	v, ok = b.Bool()
 	assert.True(ok, "should have a bool value")
 	assert.False(v, "should be set to false")
-
 }

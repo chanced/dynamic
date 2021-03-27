@@ -20,13 +20,13 @@ func TestStringNumberBoolOrTime(t *testing.T) {
 	p2 := SNBT{}
 	now, err := time.Parse(dynamic.DefaultTimeLayout(), time.Now().Format(dynamic.DefaultTimeLayout()))
 	assert.NoError(err)
-	p1.V = dynamic.NewStringNumberBoolOrTimePtr()
+	p1.V = &dynamic.StringNumberBoolOrTime{}
 	p1.V.Set(now)
 	tv, isTime := p1.V.Time()
 	assert.True(isTime)
 	assert.Equal(now, tv)
 
-	p1.V = dynamic.NewStringNumberBoolOrTimePtr()
+	p1.V = &dynamic.StringNumberBoolOrTime{}
 	p1.V.Set(now.Format(dynamic.DefaultTimeLayout()))
 	tv, isTime = p1.V.Time()
 	assert.True(isTime)
