@@ -105,13 +105,6 @@ func (r RawJSON) Equal(data []byte) bool {
 	return bytes.Equal(r, data)
 }
 
-func (r RawJSON) UnquotedString() string {
-	if r[0] == '"' && r[len(r)-1] == '"' {
-		return string(r[1 : len(r)-1])
-	}
-	return string(r)
-}
-
 // String returns the string representation of the data.
 func (r RawJSON) String() string {
 	if len(r) == 0 {
