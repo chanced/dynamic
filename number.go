@@ -19,8 +19,6 @@ const (
 
 // NewNumber returns a new Number set to the first, if any, parameters.
 //
-// Types
-//
 // You can set String to any of the following:
 //  string, *string, json.Number, fmt.Stringer,
 //  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,

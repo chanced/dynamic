@@ -18,9 +18,7 @@ type String struct {
 // considered.
 //
 //
-// Types
-//
-// You can set String to any of the following:
+// String can be set to any of the following:
 //  string, []byte, dynamic.String, fmt.Stringer, []string, *string,
 //  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
 //  uint, uint64, uint32, uint16, uint8, *uint, *uint64, *uint32, *uint16, *uint8

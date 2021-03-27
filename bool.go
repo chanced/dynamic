@@ -12,36 +12,25 @@ var boolType = reflect.TypeOf(Bool{})
 // NewBool returns a new Bool value initialized to the first, if any, value
 // passed in.
 //
-// Types
-//
 // You can set String to any of the following:
 //  bool, dynamic.Bool, *bool, *dynamic.Bool
 //  string, []byte, fmt.Stringer, *string
 //  nil
 //
-// Warning
-//
-// This function fails silently. If value does not parse out to a bool, Bool's
-// value will be set to nil
-//
-// If you need error checks, use:
-//
-//  b := dynamic.Bool{}
-//  err := b.Set("true")
-func NewBool(value ...interface{}) Bool {
+func NewBool(value interface{}) (Bool, error) {
 	b := Bool{}
-	if len(value) > 0 {
-		b.Set(value[0])
-	}
-	return b
+
+	err := b.Set(value)
+
+	return b, err
 }
 
 // NewBoolPtr returns a pointer to a new Bool
 //
 // See NewBool for valid options, usage and warnings
-func NewBoolPtr(value ...interface{}) *Bool {
-	b := NewBool(value...)
-	return &b
+func NewBoolPtr(value interface{}) (*Bool, error) {
+	b, err := NewBool(value)
+	return &b, err
 }
 
 type Bool struct {
@@ -49,8 +38,12 @@ type Bool struct {
 }
 
 var (
-	False = NewBool(false)
-	True  = NewBool(true)
+	falseValue = false
+	trueValue  = true
+)
+var (
+	False = Bool{value: &falseValue}
+	True  = Bool{value: &trueValue}
 )
 
 func (b Bool) Value() interface{} {

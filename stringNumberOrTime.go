@@ -9,8 +9,6 @@ import (
 // NewStringNumberOrTime returns a new StringNumberOrTime set to the first
 // value, if any.
 //
-// Types
-//
 // You can set String to any of the following:
 //  string, []byte, dynamic.String, fmt.Stringer, []string, *string,
 //  time.Time, *time.Time,

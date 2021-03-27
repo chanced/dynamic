@@ -105,6 +105,26 @@ func (r RawJSON) Equal(data []byte) bool {
 	return bytes.Equal(r, data)
 }
 
+// ContainsEscapeRune reports whether the string value of r contains "\"
+// It returns false if r is not a quoted string.
+func (r RawJSON) ContainsEscapeRune() bool {
+	for i := 0; i < len(r); i++ {
+		if r[i] == '\\' {
+			return true
+		}
+	}
+	return false
+}
+
+// UnquotedString trims double quotes from the bytes. It does not parse for
+// escaped characters
+func (r RawJSON) UnquotedString() string {
+	if r[0] == '"' && r[len(r)-1] == '"' {
+		return string(r[1 : len(r)-1])
+	}
+	return string(r)
+}
+
 // String returns the string representation of the data.
 func (r RawJSON) String() string {
 	if len(r) == 0 {

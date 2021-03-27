@@ -18,9 +18,8 @@ type StringNumberBoolOrTime struct {
 // NewStringNumberBoolOrTime returns a new StringNumberBoolOrTime set to the
 // first value, if any.
 //
-// Types
 //
-// You can set String to any of the following:
+// String can be set to any of the following:
 //  string, []byte, dynamic.String, fmt.Stringer, []string, *string,
 //  time.Time, *time.Time,
 //  int, int64, int32, int16, int8, *int, *int64, *int32, *int16, *int8,
