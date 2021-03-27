@@ -29,4 +29,11 @@ func TestNumber(t *testing.T) {
 	f, ok = nn.Float()
 	assert.True(ok, "should be able to retrieve a float value")
 	assert.Equal(f, float64(34.34))
+
+	err = json.Unmarshal([]byte("0.001"), &nn)
+	assert.NoError(err)
+	f, ok = nn.Float()
+	assert.True(ok, "should be able to retrieve a float value")
+	assert.Equal(f, float64(0.001))
+	assert.True(nn.HasValue())
 }

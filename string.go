@@ -793,7 +793,7 @@ func (s *String) Uint() (uint64, error) {
 	return strconv.ParseUint(str, 0, 64)
 }
 
-func (s *String) Bytes() RawJSON {
+func (s *String) Bytes() []byte {
 	if s == nil {
 		return nil
 	}

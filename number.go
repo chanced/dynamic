@@ -165,6 +165,10 @@ func (n Number) IsNil() bool {
 	return n.floatValue == nil && n.intValue == nil && n.uintValue == nil
 }
 
+func (n Number) Bytes() []byte {
+	return []byte(n.String())
+}
+
 func (n Number) Float() (float64, bool) {
 	if n.IsNil() {
 		return 0, false
