@@ -53,7 +53,7 @@ func (sas *StringOrArrayOfStrings) Iterate(fn func(string) error) error {
 
 // UnmarshalJSON satisfies json.Unmarshaler interface
 func (sas *StringOrArrayOfStrings) UnmarshalJSON(data []byte) error {
-	b := RawJSON(data)
+	b := JSON(data)
 
 	if b.IsArray() {
 		var v []string

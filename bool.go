@@ -89,7 +89,7 @@ func (b Bool) MarshalJSON() ([]byte, error) {
 }
 func (b *Bool) UnmarshalJSON(data []byte) error {
 	b.value = nil
-	r := RawJSON(data)
+	r := JSON(data)
 	switch {
 	case r.IsTrue():
 		t := true

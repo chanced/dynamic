@@ -1,3 +1,3 @@
 package dynamic
 
-var Null = RawJSON("null")
+var Null = JSON("null")

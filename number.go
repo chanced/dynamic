@@ -254,7 +254,7 @@ func (n *Number) Value() interface{} {
 
 func (n *Number) UnmarshalJSON(data []byte) error {
 	n.Clear()
-	r := RawJSON(data)
+	r := JSON(data)
 	var err error
 	var v interface{}
 	switch {

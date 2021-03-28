@@ -66,7 +66,7 @@ func (t Time) MarshalJSON() ([]byte, error) {
 
 func (t *Time) UnmarshalJSON(data []byte) error {
 	t.value = nil
-	r := RawJSON(data)
+	r := JSON(data)
 	if r.IsNull() {
 		return nil
 	}

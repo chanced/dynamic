@@ -653,7 +653,7 @@ func (s String) MarshalJSON() ([]byte, error) {
 
 func (s *String) UnmarshalJSON(data []byte) error {
 	s.value = nil
-	b := RawJSON(data)
+	b := JSON(data)
 	switch {
 	case b.IsNull():
 	case b.IsString():

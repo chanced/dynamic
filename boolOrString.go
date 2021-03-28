@@ -96,7 +96,7 @@ func (bs BoolOrString) MarshalJSON() ([]byte, error) {
 func (bs *BoolOrString) UnmarshalJSON(data []byte) error {
 	bs.boolean = Bool{}
 	bs.str = String{}
-	r := RawJSON(data)
+	r := JSON(data)
 	if r.IsNull() {
 		return nil
 	}
