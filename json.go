@@ -7,12 +7,14 @@ import (
 	"strconv"
 )
 
-type JSON []byte
-
 var (
 	trueBytes  = []byte("true")
 	falseBytes = []byte("false")
 )
+
+type JSON []byte
+
+type JSONObject map[string]JSON
 
 func (r JSON) MarshalJSON() ([]byte, error) {
 	return json.RawMessage(r).MarshalJSON()

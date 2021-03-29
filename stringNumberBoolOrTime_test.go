@@ -21,14 +21,19 @@ func TestStringNumberBoolOrTime(t *testing.T) {
 	now, err := time.Parse(dynamic.DefaultTimeLayout(), time.Now().Format(dynamic.DefaultTimeLayout()))
 	assert.NoError(err)
 	p1.V = &dynamic.StringNumberBoolOrTime{}
-	p1.V.Set(now)
-	tv, isTime := p1.V.Time()
+	err = p1.V.Set(now)
+	assert.NoError(err)
+	var tv time.Time
+	var isTime bool
+	tv, isTime = p1.V.Time()
 	assert.True(isTime)
 	assert.Equal(now, tv)
 
 	p1.V = &dynamic.StringNumberBoolOrTime{}
-	p1.V.Set(now.Format(dynamic.DefaultTimeLayout()))
+	err = p1.V.Set(now.Format(dynamic.DefaultTimeLayout()))
+	assert.NoError(err)
 	tv, isTime = p1.V.Time()
+	assert.Equal(now, tv)
 	assert.True(isTime)
 	assert.Equal(now.Format(dynamic.DefaultTimeLayout()), p1.V.String())
 
@@ -46,7 +51,8 @@ func TestStringNumberBoolOrTime(t *testing.T) {
 	assert.Equal(now, tm)
 
 	assert.NotEmpty(p1.V.String())
-	p1.V.Set(uint64(0xFFFFFFFFFFFFFFFF))
+	err = p1.V.Set(uint64(0xFFFFFFFFFFFFFFFF))
+	assert.NoError(err)
 	uv, ok := p1.V.Uint()
 	assert.True(ok)
 	assert.Equal(uint64(0xFFFFFFFFFFFFFFFF), uv)
@@ -55,7 +61,8 @@ func TestStringNumberBoolOrTime(t *testing.T) {
 	expectedJSON = []byte(`{"v":"18446744073709551615"}`)
 	assert.Equal(expectedJSON, b)
 
-	p1.V.Set(uint64(234))
+	err = p1.V.Set(uint64(234))
+	assert.NoError(err)
 	uv, ok = p1.V.Uint()
 	assert.True(ok)
 	assert.Equal(uint64(234), uv)
@@ -64,7 +71,8 @@ func TestStringNumberBoolOrTime(t *testing.T) {
 	expectedJSON = []byte(`{"v":234}`)
 	assert.Equal(expectedJSON, b)
 
-	p1.V.Set(int64(234))
+	err = p1.V.Set(int64(234))
+	assert.NoError(err)
 	iv, ok := p1.V.Int()
 	assert.True(ok)
 	assert.Equal(int64(234), iv)
@@ -77,7 +85,8 @@ func TestStringNumberBoolOrTime(t *testing.T) {
 	assert.False(ok)
 	assert.False(p1.V.IsTime())
 
-	p1.V.Set("0xFFFFFFFFFFFFFF00")
+	err = p1.V.Set("0xFFFFFFFFFFFFFF00")
+	assert.NoError(err)
 	uv, ok = p1.V.Uint()
 	assert.True(ok)
 	bigu := uint64(0xFFFFFFFFFFFFFF00)
@@ -97,7 +106,8 @@ func TestStringNumberBoolOrTime(t *testing.T) {
 	assert.False(p1.V.IsTime())
 
 	i := int64(-1239122)
-	p1.V.Set(i)
+	err = p1.V.Set(i)
+	assert.NoError(err)
 	iv, ok = p1.V.Int()
 	assert.True(ok)
 	assert.Equal(i, iv)
@@ -105,12 +115,14 @@ func TestStringNumberBoolOrTime(t *testing.T) {
 	assert.False(ok)
 	assert.Zero(uv)
 
-	p1.V.Set(958.34)
+	err = p1.V.Set(958.34)
+	assert.NoError(err)
 	f, ok := p1.V.Float()
 	assert.True(ok)
 	assert.Equal(958.34, f)
 
-	p1.V.Set(float64(-3942.2))
+	err = p1.V.Set(float64(-3942.2))
+	assert.NoError(err)
 	b, err = json.Marshal(p1)
 	assert.NoError(err)
 	expectedJSON = []byte(`{"v":-3942.2}`)
@@ -123,7 +135,8 @@ func TestStringNumberBoolOrTime(t *testing.T) {
 	assert.True(ok)
 	assert.Equal(f2, -3942.2)
 
-	p1.V.Set(float64(-992345.1233))
+	err = p1.V.Set(float64(-992345.1233))
+	assert.NoError(err)
 	b, err = json.Marshal(p1)
 	assert.NoError(err)
 	expectedJSON = []byte(`{"v":-992345.1233}`)
@@ -136,7 +149,8 @@ func TestStringNumberBoolOrTime(t *testing.T) {
 	assert.True(ok)
 	assert.Equal(f2, -992345.1233)
 
-	p1.V.Set(float64(-993456789012345.1))
+	err = p1.V.Set(float64(-993456789012345.1))
+	assert.NoError(err)
 	b, err = json.Marshal(p1)
 	assert.NoError(err)
 	expectedJSON = []byte(`{"v":-993456789012345.1}`)

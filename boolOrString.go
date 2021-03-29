@@ -9,8 +9,8 @@ import (
 
 // errors
 var (
-	ErrInvalidValue = errors.New("error: invalid value")
-	ErrInvalidType  = errors.New("error: invalid type")
+	ErrInvalidValue = errors.New("dynamic: invalid value")
+	ErrInvalidType  = errors.New("dynamic: invalid type")
 )
 
 var typeBoolOrString = reflect.TypeOf(BoolOrString{})
