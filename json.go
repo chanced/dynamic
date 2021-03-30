@@ -14,104 +14,106 @@ var (
 
 type JSON []byte
 
-type JSONObject map[string]JSON
+func (raw JSON) MarshalJSON() ([]byte, error) {
+	if raw == nil {
+		return Null, nil
+	}
+	return raw, nil
 
-func (r JSON) MarshalJSON() ([]byte, error) {
-	return json.RawMessage(r).MarshalJSON()
 }
-func (r *JSON) UnmarshalJSON(data []byte) error {
-	if r == nil {
+func (raw *JSON) UnmarshalJSON(data []byte) error {
+	if raw == nil {
 		return errors.New("dynamic.RawMessage: UnmarshalJSON on nil pointer")
 	}
-	*r = append((*r)[0:0], data...)
+	*raw = append((*raw)[0:0], data...)
 	return nil
 }
-func (r JSON) IsObject() bool {
-	if len(r) == 0 {
+func (raw JSON) IsObject() bool {
+	if len(raw) == 0 {
 		return false
 	}
-	return r[0] == '{'
+	return raw[0] == '{'
 
 }
-func (r JSON) IsMalformed() bool {
-	if len(r) == 0 {
+func (raw JSON) IsMalformed() bool {
+	if len(raw) == 0 {
 		return true
 	}
-	switch r[0] {
+	switch raw[0] {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-':
-		_, err := strconv.ParseFloat(string(r), 64)
+		_, err := strconv.ParseFloat(string(raw), 64)
 		return err != nil
 	case '[':
-		if len(r) == 1 || r[len(r)-1] != ']' {
+		if len(raw) == 1 || raw[len(raw)-1] != ']' {
 			return true
 		}
 		var t []interface{}
-		err := json.Unmarshal(r, &t)
+		err := json.Unmarshal(raw, &t)
 		return err == nil
 	case '{':
-		if len(r) == 1 || r[len(r)-1] != '}' {
+		if len(raw) == 1 || raw[len(raw)-1] != '}' {
 			return true
 		}
 		var t map[string]interface{}
-		err := json.Unmarshal(r, &t)
+		err := json.Unmarshal(raw, &t)
 		return err != nil
 	case '"':
-		if len(r) == 1 || r[len(r)-1] != '"' {
+		if len(raw) == 1 || raw[len(raw)-1] != '"' {
 			return true
 		}
 		var t string
-		err := json.Unmarshal(r, &t)
+		err := json.Unmarshal(raw, &t)
 		return err != nil
 	case 't':
-		return !r.Equal(trueBytes)
+		return !raw.Equal(trueBytes)
 	case 'f':
-		return !r.IsFalse()
+		return !raw.IsFalse()
 	case 'n':
-		return !r.IsNull()
+		return !raw.IsNull()
 	default:
 		return true
 	}
 
 }
 
-func (r JSON) IsArray() bool {
-	if len(r) == 0 {
+func (raw JSON) IsArray() bool {
+	if len(raw) == 0 {
 		return false
 	}
-	return r[0] == '['
+	return raw[0] == '['
 }
 
-func (r JSON) IsNull() bool {
-	return bytes.Equal(r, Null)
+func (raw JSON) IsNull() bool {
+	return bytes.Equal(raw, Null)
 }
 
 // IsBool only reports true if:
-//  r == []byte("true") || r == []byte("false")
+//  raw == []byte("true") || raw == []byte("false")
 // It does not attempt to parse string values
-func (r JSON) IsBool() bool {
-	if len(r) < 4 {
+func (raw JSON) IsBool() bool {
+	if len(raw) < 4 {
 		return false
 	}
-	return r[0] == 't' || r[0] == 'f'
+	return raw[0] == 't' || raw[0] == 'f'
 }
 
-func (r JSON) IsTrue() bool {
-	return bytes.Equal(r, trueBytes)
+func (raw JSON) IsTrue() bool {
+	return bytes.Equal(raw, trueBytes)
 }
 
-func (r JSON) IsFalse() bool {
-	return bytes.Equal(r, falseBytes)
+func (raw JSON) IsFalse() bool {
+	return bytes.Equal(raw, falseBytes)
 }
 
-func (r JSON) Equal(data []byte) bool {
-	return bytes.Equal(r, data)
+func (raw JSON) Equal(data []byte) bool {
+	return bytes.Equal(raw, data)
 }
 
-// ContainsEscapeRune reports whether the string value of r contains "\"
-// It returns false if r is not a quoted string.
-func (r JSON) ContainsEscapeRune() bool {
-	for i := 0; i < len(r); i++ {
-		if r[i] == '\\' {
+// ContainsEscapeRune reports whether the string value of raw contains "\"
+// It returns false if raw is not a quoted string.
+func (raw JSON) ContainsEscapeRune() bool {
+	for i := 0; i < len(raw); i++ {
+		if raw[i] == '\\' {
 			return true
 		}
 	}
@@ -120,35 +122,51 @@ func (r JSON) ContainsEscapeRune() bool {
 
 // UnquotedString trims double quotes from the bytes. It does not parse for
 // escaped characters
-func (r JSON) UnquotedString() string {
-	if r[0] == '"' && r[len(r)-1] == '"' {
-		return string(r[1 : len(r)-1])
+func (raw JSON) UnquotedString() string {
+	if raw[0] == '"' && raw[len(raw)-1] == '"' {
+		return string(raw[1 : len(raw)-1])
 	}
-	return string(r)
+	return string(raw)
 }
 
 // String returns the string representation of the data.
-func (r JSON) String() string {
-	if len(r) == 0 {
+func (raw JSON) String() string {
+	if len(raw) == 0 {
 		return ""
 	}
-	return string(r)
+	return string(raw)
 }
 
-func (r JSON) IsNumber() bool {
-	if len(r) == 0 {
+func (raw JSON) IsNumber() bool {
+	if len(raw) == 0 {
 		return false
 	}
-	switch r[0] {
+	switch raw[0] {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-':
 		return true
 	default:
 		return false
 	}
 }
-func (r JSON) IsString() bool {
-	if len(r) == 0 {
+func (raw JSON) IsString() bool {
+	if len(raw) == 0 {
 		return false
 	}
-	return r[0] == '"'
+	return raw[0] == '"'
+}
+
+type JSONObject map[string]JSON
+
+func (obj JSONObject) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]JSON(obj))
+}
+
+func (obj *JSONObject) UnmarshalJSON(data []byte) error {
+	var m map[string]JSON
+	err := json.Unmarshal(data, &m)
+	if err != nil {
+		return err
+	}
+	*obj = m
+	return nil
 }
