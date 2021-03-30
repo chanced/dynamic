@@ -259,24 +259,29 @@ func (n *Number) UnmarshalJSON(data []byte) error {
 	var v interface{}
 	switch {
 	case r.IsNull():
+		return nil
 	case r.IsNumber():
 		v, err = parseNumberFromString(string(data))
+
 	case r.IsString():
 		var str string
-		err := json.Unmarshal(data, str)
+		err := json.Unmarshal(data, &str)
 		if err != nil {
 			return err
 		}
 		v, err = parseNumberFromString(str)
+
 	default:
 		return &json.UnmarshalTypeError{Value: string(data), Type: typeNumber}
-	}
-	if err == nil {
-		err = n.Set(v)
 	}
 	if err != nil {
 		return &json.UnmarshalTypeError{Value: string(data), Type: typeNumber}
 	}
+	err = n.Set(v)
+	if err != nil {
+		return &json.UnmarshalTypeError{Value: string(data), Type: typeNumber}
+	}
+
 	return nil
 }
 

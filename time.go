@@ -90,7 +90,7 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 			}
 			tt, e := time.Parse(layout, str)
 			if e != nil {
-				if err != nil {
+				if err == nil {
 					err = e
 				}
 				continue

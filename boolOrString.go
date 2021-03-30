@@ -106,8 +106,7 @@ func (bs *BoolOrString) UnmarshalJSON(data []byte) error {
 		if err != nil {
 			return err
 		}
-		bs.str.Set(v)
-		return nil
+		return bs.str.Set(v)
 	}
 	if r.IsBool() {
 		var v bool
@@ -115,8 +114,8 @@ func (bs *BoolOrString) UnmarshalJSON(data []byte) error {
 		if err != nil {
 			return err
 		}
-		bs.boolean.Set(v)
-		return nil
+
+		return bs.boolean.Set(v)
 	}
 	return &json.UnmarshalTypeError{Value: string(data), Type: typeBoolOrString}
 }

@@ -48,7 +48,8 @@ func TestStringNumberOrTime(t *testing.T) {
 	assert.Equal(now, tm)
 
 	assert.NotEmpty(p1.V.String())
-	p1.V.Set(uint64(0xFFFFFFFFFFFFFFFF))
+	err = p1.V.Set(uint64(0xFFFFFFFFFFFFFFFF))
+	assert.NoError(err)
 	uv, ok := p1.V.Uint()
 	assert.True(ok)
 	assert.Equal(uint64(0xFFFFFFFFFFFFFFFF), uv)
@@ -57,7 +58,8 @@ func TestStringNumberOrTime(t *testing.T) {
 	expectedJSON = []byte(`{"v":"18446744073709551615"}`)
 	assert.Equal(expectedJSON, b)
 
-	p1.V.Set(uint64(234))
+	err = p1.V.Set(uint64(234))
+	assert.NoError(err)
 	uv, ok = p1.V.Uint()
 	assert.True(ok)
 	assert.Equal(uint64(234), uv)
