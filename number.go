@@ -260,17 +260,22 @@ func (n *Number) UnmarshalJSON(data []byte) error {
 	switch {
 	case r.IsNull():
 	case r.IsNumber():
-		v, err = parseNumberFromString(r.String())
+		v, err = parseNumberFromString(string(data))
 	case r.IsString():
-		v, err = parseNumberFromString(r.String())
+		var str string
+		err := json.Unmarshal(data, str)
+		if err != nil {
+			return err
+		}
+		v, err = parseNumberFromString(str)
 	default:
-		return &json.UnmarshalTypeError{Value: r.String(), Type: typeNumber}
+		return &json.UnmarshalTypeError{Value: string(data), Type: typeNumber}
 	}
 	if err == nil {
 		err = n.Set(v)
 	}
 	if err != nil {
-		return &json.UnmarshalTypeError{Value: r.String(), Type: typeNumber}
+		return &json.UnmarshalTypeError{Value: string(data), Type: typeNumber}
 	}
 	return nil
 }

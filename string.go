@@ -657,7 +657,11 @@ func (s *String) UnmarshalJSON(data []byte) error {
 	switch {
 	case b.IsNull():
 	case b.IsString():
-		str := b.String()
+		var str string
+		err := json.Unmarshal(data, &str)
+		if err != nil {
+			return err
+		}
 		s.value = &str
 	default:
 		// TODO: really need to do better with errors

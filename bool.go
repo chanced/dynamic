@@ -90,6 +90,7 @@ func (b Bool) MarshalJSON() ([]byte, error) {
 func (b *Bool) UnmarshalJSON(data []byte) error {
 	b.value = nil
 	r := JSON(data)
+
 	switch {
 	case r.IsTrue():
 		t := true
@@ -100,16 +101,21 @@ func (b *Bool) UnmarshalJSON(data []byte) error {
 	case r.IsNull():
 		return nil
 	case r.IsString():
-		if r.String() == "" {
+		if r.UnquotedString() == "" {
 			return nil
 		}
-		v, err := strconv.ParseBool(r.String())
+		var str string
+		err := json.Unmarshal(data, &str)
 		if err != nil {
-			return &json.UnmarshalTypeError{Value: r.String(), Type: boolType}
+			return err
+		}
+		v, err := strconv.ParseBool(str)
+		if err != nil {
+			return &json.UnmarshalTypeError{Value: string(data), Type: boolType}
 		}
 		b.value = &v
 	default:
-		return &json.UnmarshalTypeError{Value: r.String(), Type: boolType}
+		return &json.UnmarshalTypeError{Value: string(data), Type: boolType}
 	}
 	return nil
 }
@@ -122,6 +128,7 @@ func parseBool(str string) (*bool, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &b, nil
 }
 

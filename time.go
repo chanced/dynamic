@@ -80,10 +80,15 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 		t.value = &tt
 		return nil
 	}
-	if r.IsString() && !r.IsMalformed() {
+	if r.IsString() {
 		var err error
 		for _, layout := range DefaultTimeLayouts {
-			tt, e := time.Parse(layout, r.String())
+			var str string
+			err := json.Unmarshal(data, &str)
+			if err != nil {
+				return err
+			}
+			tt, e := time.Parse(layout, str)
 			if e != nil {
 				if err != nil {
 					err = e

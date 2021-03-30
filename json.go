@@ -102,6 +102,10 @@ func (d JSON) ContainsEscapeRune() bool {
 // UnquotedString trims double quotes from the bytes. It does not parse for
 // escaped characters
 func (d JSON) UnquotedString() string {
+	if len(d) < 2 {
+		return string(d)
+	}
+
 	if d[0] == '"' && d[len(d)-1] == '"' {
 		return string(d[1 : len(d)-1])
 	}
