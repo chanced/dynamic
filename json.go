@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"strconv"
 )
 
 var (
@@ -14,106 +13,86 @@ var (
 
 type JSON []byte
 
-func (raw JSON) MarshalJSON() ([]byte, error) {
-	if raw == nil {
+func (d JSON) MarshalJSON() ([]byte, error) {
+	if d == nil {
 		return Null, nil
 	}
-	return raw, nil
+	return d, nil
 
 }
-func (raw *JSON) UnmarshalJSON(data []byte) error {
-	if raw == nil {
+func (d *JSON) UnmarshalJSON(data []byte) error {
+	if d == nil {
 		return errors.New("dynamic.RawMessage: UnmarshalJSON on nil pointer")
 	}
-	*raw = append((*raw)[0:0], data...)
+	*d = append((*d)[0:0], data...)
 	return nil
 }
-func (raw JSON) IsObject() bool {
-	if len(raw) == 0 {
+func (d JSON) IsObject() bool {
+	if len(d) < 2 {
 		return false
 	}
-	return raw[0] == '{'
-
-}
-func (raw JSON) IsMalformed() bool {
-	if len(raw) == 0 {
-		return true
-	}
-	switch raw[0] {
-	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-':
-		_, err := strconv.ParseFloat(string(raw), 64)
-		return err != nil
-	case '[':
-		if len(raw) == 1 || raw[len(raw)-1] != ']' {
-			return true
-		}
-		var t []interface{}
-		err := json.Unmarshal(raw, &t)
-		return err == nil
-	case '{':
-		if len(raw) == 1 || raw[len(raw)-1] != '}' {
-			return true
-		}
-		var t map[string]interface{}
-		err := json.Unmarshal(raw, &t)
-		return err != nil
-	case '"':
-		if len(raw) == 1 || raw[len(raw)-1] != '"' {
-			return true
-		}
-		var t string
-		err := json.Unmarshal(raw, &t)
-		return err != nil
-	case 't':
-		return !raw.Equal(trueBytes)
-	case 'f':
-		return !raw.IsFalse()
-	case 'n':
-		return !raw.IsNull()
-	default:
-		return true
-	}
-
+	return d[0] == '{' && d[len(d)-1] == '}'
 }
 
-func (raw JSON) IsArray() bool {
-	if len(raw) == 0 {
+func (d JSON) IsEmptyObject() bool {
+	return d.IsObject() && len(d) == 2
+}
+
+func (d JSON) IsEmptyArray() bool {
+	return d.IsArray() && len(d) == 2
+}
+
+// IsArray reports whether the data is a json array. It does not check whether
+// the json is malformed.
+func (d JSON) IsArray() bool {
+	if len(d) < 2 {
 		return false
 	}
-	return raw[0] == '['
+	return d[0] == '[' && d[len(d)-1] == ']'
 }
 
-func (raw JSON) IsNull() bool {
-	return bytes.Equal(raw, Null)
+func (d JSON) IsNull() bool {
+	return bytes.Equal(d, Null)
 }
 
-// IsBool only reports true if:
-//  raw == []byte("true") || raw == []byte("false")
-// It does not attempt to parse string values
-func (raw JSON) IsBool() bool {
-	if len(raw) < 4 {
+// IsBool reports true if data appears to be a json boolean value. It is
+// possible that it will report false positives of malformed json.
+//
+// IsBool does not parse strings
+func (d JSON) IsBool() bool {
+	if len(d) < 4 {
 		return false
 	}
-	return raw[0] == 't' || raw[0] == 'f'
+	return (d[0] == 't' && len(d) == 4) || (d[0] == 'f' && len(d) == 5)
 }
 
-func (raw JSON) IsTrue() bool {
-	return bytes.Equal(raw, trueBytes)
+// IsTrue reports true if data appears to be a json boolean value of true. It is
+// possible that it will report false positives of malformed json as it only
+// checks the first character and length.
+//
+// IsTrue does not parse strings
+func (d JSON) IsTrue() bool {
+	return d.IsBool() && d[0] == 't'
 }
 
-func (raw JSON) IsFalse() bool {
-	return bytes.Equal(raw, falseBytes)
+// IsFalse reports true if data appears to be a json boolean value of false. It is
+// possible that it will report false positives of malformed json as it only
+// checks the first character and length.
+//
+// IsFalse does not parse strings
+func (d JSON) IsFalse() bool {
+	return bytes.Equal(d, falseBytes)
 }
 
-func (raw JSON) Equal(data []byte) bool {
-	return bytes.Equal(raw, data)
+func (d JSON) Equal(data []byte) bool {
+	return bytes.Equal(d, data)
 }
 
-// ContainsEscapeRune reports whether the string value of raw contains "\"
-// It returns false if raw is not a quoted string.
-func (raw JSON) ContainsEscapeRune() bool {
-	for i := 0; i < len(raw); i++ {
-		if raw[i] == '\\' {
+// ContainsEscapeRune reports whether the string value of d contains "\"
+// It returns false if d is not a quoted string.
+func (d JSON) ContainsEscapeRune() bool {
+	for i := 0; i < len(d); i++ {
+		if d[i] == '\\' {
 			return true
 		}
 	}
@@ -122,37 +101,29 @@ func (raw JSON) ContainsEscapeRune() bool {
 
 // UnquotedString trims double quotes from the bytes. It does not parse for
 // escaped characters
-func (raw JSON) UnquotedString() string {
-	if raw[0] == '"' && raw[len(raw)-1] == '"' {
-		return string(raw[1 : len(raw)-1])
+func (d JSON) UnquotedString() string {
+	if d[0] == '"' && d[len(d)-1] == '"' {
+		return string(d[1 : len(d)-1])
 	}
-	return string(raw)
+	return string(d)
 }
 
-// String returns the string representation of the data.
-func (raw JSON) String() string {
-	if len(raw) == 0 {
-		return ""
-	}
-	return string(raw)
-}
-
-func (raw JSON) IsNumber() bool {
-	if len(raw) == 0 {
+func (d JSON) IsNumber() bool {
+	if len(d) == 0 {
 		return false
 	}
-	switch raw[0] {
+	switch d[0] {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-':
 		return true
 	default:
 		return false
 	}
 }
-func (raw JSON) IsString() bool {
-	if len(raw) == 0 {
+func (d JSON) IsString() bool {
+	if len(d) == 0 {
 		return false
 	}
-	return raw[0] == '"'
+	return d[0] == '"'
 }
 
 type JSONObject map[string]JSON
