@@ -630,6 +630,9 @@ func (s *String) EncodeNilToEmptyString() {
 }
 
 func (s *String) IsEmpty() bool {
+	if s == nil {
+		return true
+	}
 	if s.IsNil() {
 		return true
 	}
