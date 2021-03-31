@@ -607,16 +607,18 @@ func (s *String) IndexRune(r rune) int {
 	return strings.IndexRune(*s.value, r)
 }
 
-func (s String) HasValue() bool {
+func (s *String) HasValue() bool {
+	if s == nil {
+		return false
+	}
 	return !s.IsEmpty()
 }
 
-func (s String) Value() interface{} {
-	str := s.value
-	if str == nil {
+func (s *String) Value() interface{} {
+	if s == nil || s.value == nil {
 		return nil
 	}
-	return *str
+	return *s.value
 }
 
 func (s *String) EncodeNilToNull() {
