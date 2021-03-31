@@ -13,6 +13,9 @@ var (
 
 type JSON []byte
 
+func (d JSON) Len() int {
+	return len(d)
+}
 func (d JSON) MarshalJSON() ([]byte, error) {
 	if d == nil {
 		return Null, nil
