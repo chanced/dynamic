@@ -290,10 +290,11 @@ func (n Number) String() string {
 		return strconv.FormatFloat(*n.floatValue, 'f', -1, 64)
 	}
 	if n.uintValue != nil {
-		return strconv.FormatUint(*n.uintValue, 64)
+		return strconv.FormatUint(*n.uintValue, 10)
 	}
 	if n.intValue != nil {
-		return strconv.FormatInt(*n.intValue, 64)
+
+		return strconv.FormatInt(*n.intValue, 10)
 	}
 	return ""
 }

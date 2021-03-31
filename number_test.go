@@ -37,4 +37,12 @@ func TestNumber(t *testing.T) {
 	assert.True(ok, "should be able to retrieve a float value")
 	assert.Equal(f, float64(0.001))
 	assert.True(nn.HasValue())
+
+	ni, err := dynamic.NewNumber(34)
+	assert.NoError(err)
+	i, ok := ni.Int()
+	assert.True(ok)
+	assert.Equal(int64(34), i)
+	str := ni.String()
+	assert.NotEmpty(str)
 }
