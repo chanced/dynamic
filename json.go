@@ -17,9 +17,10 @@ func (d JSON) Len() int {
 	return len(d)
 }
 func (d JSON) MarshalJSON() ([]byte, error) {
-	if d == nil {
+	if d == nil || len(d) == 0 {
 		return Null, nil
 	}
+
 	return d, nil
 
 }
