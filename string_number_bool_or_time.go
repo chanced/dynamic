@@ -54,6 +54,7 @@ func NewStringNumberBoolOrTimePtr(value interface{}) *StringNumberBoolOrTime {
 }
 
 func (snbt StringNumberBoolOrTime) Value() interface{} {
+
 	switch {
 	case snbt.time.HasValue():
 		return snbt.time.Value()

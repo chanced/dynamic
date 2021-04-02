@@ -166,8 +166,7 @@ func (n Number) Bytes() []byte {
 }
 func (n Number) Float32() (float32, bool) {
 	if f, ok := n.Float64(); ok && math.MaxFloat32 <= math.Abs(f) {
-		v, _ := strconv.ParseFloat(strconv.FormatFloat(f, 'f', -1, 64), 32)
-		return float32(v), true
+		return float32(f), true
 	}
 	return 0, false
 }

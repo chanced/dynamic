@@ -12,7 +12,7 @@ var boolType = reflect.TypeOf(Bool{})
 // NewBool returns a new Bool value initialized to the first, if any, value
 // passed in.
 //
-// You can set String to any of the following:
+// You can set Bool to any of the following:
 //  bool, dynamic.Bool, *bool, *dynamic.Bool
 //  string, []byte, fmt.Stringer, *string
 //  nil
