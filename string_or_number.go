@@ -31,28 +31,28 @@ type StringOrNumber struct {
 //  v := &dynamic.StringOrNumber{}
 //  err := v.Set(myType)
 func NewStringOrNumber(value interface{}) StringOrNumber {
-	snbt := StringOrNumber{
+	sn := StringOrNumber{
 		str:    String{},
 		number: Number{},
 	}
-	err := snbt.Set(value)
+	err := sn.Set(value)
 	if err != nil {
 		panic(err)
 	}
-	return snbt
+	return sn
 }
 
 func NewStringOrNumberPtr(value interface{}) *StringOrNumber {
-	snbt := NewStringOrNumber(value)
-	return &snbt
+	sn := NewStringOrNumber(value)
+	return &sn
 }
 
-func (snbt StringOrNumber) Value() interface{} {
+func (sn StringOrNumber) Value() interface{} {
 	switch {
-	case snbt.number.HasValue():
-		return snbt.number.Value()
+	case sn.number.HasValue():
+		return sn.number.Value()
 	default:
-		return snbt.str.String()
+		return sn.str.String()
 	}
 }
 
@@ -72,26 +72,26 @@ func (snbt StringOrNumber) Value() interface{} {
 // All pointer values are dereferenced.
 //
 // Set returns an error if value is not one of the aforementioned types
-func (snbt *StringOrNumber) Set(value interface{}) error {
-	snbt.Clear()
+func (sn *StringOrNumber) Set(value interface{}) error {
+	sn.Clear()
 	if isNumber(value) {
-		return snbt.number.Set(value)
+		return sn.number.Set(value)
 	}
-	return snbt.str.Set(value)
+	return sn.str.Set(value)
 
 }
 
-func (snbt StringOrNumber) MarshalJSON() ([]byte, error) {
-	if snbt.IsNil() {
+func (sn StringOrNumber) MarshalJSON() ([]byte, error) {
+	if sn.IsNil() {
 		return Null, nil
 	}
-	if snbt.number.HasValue() {
-		return snbt.number.MarshalJSON()
+	if sn.number.HasValue() {
+		return sn.number.MarshalJSON()
 	}
-	return snbt.str.MarshalJSON()
+	return sn.str.MarshalJSON()
 }
 
-func (snbt *StringOrNumber) UnmarshalJSON(data []byte) error {
+func (sn *StringOrNumber) UnmarshalJSON(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	dec := json.NewDecoder(buf)
 	dec.UseNumber()
@@ -100,34 +100,34 @@ func (snbt *StringOrNumber) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	return snbt.Set(v)
+	return sn.Set(v)
 }
 
 // Clear sets the value of StringOrNumber to nil
-func (snbt *StringOrNumber) Clear() {
-	snbt.number.Clear()
-	snbt.str.Clear()
+func (sn *StringOrNumber) Clear() {
+	sn.number.Clear()
+	sn.str.Clear()
 }
 
-func (snbt StringOrNumber) String() string {
+func (sn StringOrNumber) String() string {
 	switch {
-	case snbt.number.HasValue():
-		return snbt.number.String()
+	case sn.number.HasValue():
+		return sn.number.String()
 	default:
-		return snbt.str.String()
+		return sn.str.String()
 	}
 }
 
-func (snbt StringOrNumber) IsNil() bool {
-	return snbt.str.IsNil() && snbt.number.IsNil()
+func (sn StringOrNumber) IsNil() bool {
+	return sn.str.IsNil() && sn.number.IsNil()
 }
 
 // IsString reports whether the value is a string
 //
 // Note: if you've used any of the other type checks before this that reported
 // true, the string may have been cast and is no longer a string.
-func (snbt StringOrNumber) IsString() bool {
-	return snbt.str.HasValue()
+func (sn StringOrNumber) IsString() bool {
+	return sn.str.HasValue()
 }
 
 // IsBool reports whether the value is a boolean or a string representation of a
@@ -135,37 +135,37 @@ func (snbt StringOrNumber) IsString() bool {
 //
 // The underlying type of StringOrNumber is altered from a string to a
 // bool if the value is successfully parsed.
-func (snbt *StringOrNumber) IsBool() bool {
-	_, ok := snbt.Bool()
+func (sn *StringOrNumber) IsBool() bool {
+	_, ok := sn.Bool()
 	return ok
 }
 
-// IsEmptyString returns true if snbt is nil or an empty string
-func (snbt *StringOrNumber) IsEmptyString() bool {
-	if snbt == nil || snbt.IsNil() {
+// IsEmptyString returns true if sn is nil or an empty string
+func (sn *StringOrNumber) IsEmptyString() bool {
+	if sn == nil || sn.IsNil() {
 		return true
 	}
-	return snbt.String() == ""
+	return sn.String() == ""
 }
 
-func (snbt *StringOrNumber) Duration() (time.Duration, bool) {
-	if snbt == nil || !snbt.IsString() {
+func (sn *StringOrNumber) Duration() (time.Duration, bool) {
+	if sn == nil || !sn.IsString() {
 		return time.Duration(0), false
 	}
-	d, err := time.ParseDuration(snbt.str.String())
+	d, err := time.ParseDuration(sn.str.String())
 	if err != nil {
 		return time.Duration(0), false
 	}
 	return d, true
 }
 
-func (snbt *StringOrNumber) Bool() (bool, bool) {
-	if snbt.str.HasValue() && !snbt.str.IsEmpty() {
-		v, err := parseBool(snbt.str.String())
+func (sn *StringOrNumber) Bool() (bool, bool) {
+	if sn.str.HasValue() && !sn.str.IsEmpty() {
+		v, err := parseBool(sn.str.String())
 		if err != nil {
 			return false, false
 		}
-		snbt.str.Clear()
+		sn.str.Clear()
 		return *v, true
 	}
 	return false, false
@@ -173,69 +173,153 @@ func (snbt *StringOrNumber) Bool() (bool, bool) {
 
 // Time returns the Time value and true. If the original value is a string, Time
 // attempts to parse it with the DefaultTimeLayouts or the provided layouts
-func (snbt *StringOrNumber) Time(layout ...string) (time.Time, bool) {
-	if snbt.str.HasValue() && !snbt.str.IsEmpty() {
-		t, err := parseTime(snbt.str.String(), layout...)
+func (sn *StringOrNumber) Time(layout ...string) (time.Time, bool) {
+	if sn.str.HasValue() && !sn.str.IsEmpty() {
+		t, err := parseTime(sn.str.String(), layout...)
 		if err != nil {
 			return time.Time{}, false
 		}
-		snbt.str.value = nil
+		sn.str.value = nil
 		return t, true
 	}
 	return time.Time{}, false
 }
 
-func (snbt *StringOrNumber) IsTime(layout ...string) bool {
-	if _, ok := snbt.Time(layout...); ok {
+func (sn *StringOrNumber) IsTime(layout ...string) bool {
+	if _, ok := sn.Time(layout...); ok {
 		return ok
 	}
 	return false
 }
 
-func (snbt *StringOrNumber) Number() (interface{}, bool) {
-	if snbt.number.HasValue() {
-		return snbt.number.Value(), true
+// Number returns the underlying value of Number. It could be: int64, uint64,
+// float64, or nil. If you need specific types, use their corresponding methods.
+func (sn *StringOrNumber) Number() interface{} {
+	if sn.number.HasValue() {
+		return sn.number.Value()
 	}
-	if snbt.str.HasValue() && !snbt.str.IsEmpty() {
-		err := snbt.number.Parse(snbt.str.String())
+	if sn.str.HasValue() && !sn.str.IsEmpty() {
+		err := sn.number.Parse(sn.str.String())
 		if err != nil {
-			return nil, false
+			return nil
 		}
-		snbt.str.Clear()
-		return snbt.number.Value(), true
+		sn.str.Clear()
+		return sn.number.Value()
 	}
-	return nil, false
+	return nil
 }
 
-func (snbt *StringOrNumber) Float() (interface{}, bool) {
-	if snbt.number.HasValue() {
-		return snbt.number.Float()
+func (sn *StringOrNumber) Float64() (float64, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Float64()
 	}
-	if snbt.IsNumber() {
-		return snbt.number.Float()
+	if sn.IsNumber() {
+		return sn.number.Float64()
 	}
-	return nil, false
+	return 0, false
 }
 
-func (snbt *StringOrNumber) Int() (interface{}, bool) {
-	if snbt.number.HasValue() {
-		return snbt.number.Int()
+func (sn *StringOrNumber) Float32() (float32, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Float32()
 	}
-	if snbt.IsNumber() {
-		return snbt.number.Int()
+	if sn.IsNumber() {
+		return sn.number.Float32()
 	}
-	return nil, false
+	return 0, false
 }
-func (snbt *StringOrNumber) Uint() (interface{}, bool) {
-	if snbt.number.HasValue() {
-		return snbt.number.Uint()
+
+func (sn *StringOrNumber) Int64() (int64, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Int64()
 	}
-	if snbt.IsNumber() {
-		return snbt.number.Uint()
+	if sn.IsNumber() {
+		return sn.number.Int64()
 	}
-	return nil, false
+	return 0, false
 }
-func (snbt *StringOrNumber) IsNumber() bool {
-	_, ok := snbt.Number()
-	return ok
+func (sn *StringOrNumber) Uint64() (uint64, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Uint64()
+	}
+	if sn.IsNumber() {
+		return sn.number.Uint64()
+	}
+	return 0, false
+}
+func (sn *StringOrNumber) Uint() (uint, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Uint()
+	}
+	if sn.IsNumber() {
+		return sn.number.Uint()
+	}
+	return 0, false
+}
+func (sn *StringOrNumber) Uint32() (uint32, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Uint32()
+	}
+	if sn.IsNumber() {
+		return sn.number.Uint32()
+	}
+	return 0, false
+}
+func (sn *StringOrNumber) Uint16() (uint16, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Uint16()
+	}
+	if sn.IsNumber() {
+		return sn.number.Uint16()
+	}
+	return 0, false
+}
+func (sn *StringOrNumber) Uint8() (uint8, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Uint8()
+	}
+	if sn.IsNumber() {
+		return sn.number.Uint8()
+	}
+	return 0, false
+}
+func (sn *StringOrNumber) Int() (int, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Int()
+	}
+	if sn.IsNumber() {
+		return sn.number.Int()
+	}
+	return 0, false
+}
+func (sn *StringOrNumber) Int32() (int32, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Int32()
+	}
+	if sn.IsNumber() {
+		return sn.number.Int32()
+	}
+	return 0, false
+}
+func (sn *StringOrNumber) Int16() (int16, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Int16()
+	}
+	if sn.IsNumber() {
+		return sn.number.Int16()
+	}
+	return 0, false
+}
+func (sn *StringOrNumber) Int8() (int8, bool) {
+	if sn.number.HasValue() {
+		return sn.number.Int8()
+	}
+	if sn.IsNumber() {
+		return sn.number.Int8()
+	}
+	return 0, false
+}
+
+func (sn *StringOrNumber) IsNumber() bool {
+	return sn.Number() != nil
 }

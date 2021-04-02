@@ -189,52 +189,136 @@ func (snt *StringNumberOrTime) IsTime(layout ...string) bool {
 	return false
 }
 
-func (snt *StringNumberOrTime) Number() (interface{}, bool) {
+// Number returns the underlying value of Number. It could be: int64, uint64,
+// float64, or nil. If you need specific types, use their corresponding methods.
+func (snt *StringNumberOrTime) Number() interface{} {
 	if snt.number.HasValue() {
-		return snt.number.Value(), true
+		return snt.number.Value()
 	}
 	if snt.str.HasValue() && !snt.str.IsEmpty() {
 		err := snt.number.Parse(snt.str.String())
 		if err != nil {
-			return nil, false
+			return nil
 		}
 		snt.str.Clear()
-		return snt.number.Value(), true
+		return snt.number.Value()
 	}
-	return nil, false
+	return nil
 }
 
-func (snt *StringNumberOrTime) Float() (interface{}, bool) {
+func (snt *StringNumberOrTime) Float64() (float64, bool) {
 	if snt.number.HasValue() {
-		return snt.number.Float()
+		return snt.number.Float64()
 	}
 	if snt.IsNumber() {
-		return snt.number.Float()
+		return snt.number.Float64()
 	}
-	return nil, false
+	return 0, false
 }
 
-func (snt *StringNumberOrTime) Int() (interface{}, bool) {
+func (snt *StringNumberOrTime) Float32() (float32, bool) {
 	if snt.number.HasValue() {
-		return snt.number.Int()
+		return snt.number.Float32()
 	}
 	if snt.IsNumber() {
-		return snt.number.Int()
+		return snt.number.Float32()
 	}
-	return nil, false
+	return 0, false
 }
-func (snt *StringNumberOrTime) Uint() (interface{}, bool) {
+
+func (snt *StringNumberOrTime) Int64() (int64, bool) {
+	if snt.number.HasValue() {
+		return snt.number.Int64()
+	}
+	if snt.IsNumber() {
+		return snt.number.Int64()
+	}
+	return 0, false
+}
+func (snt *StringNumberOrTime) Uint64() (uint64, bool) {
+	if snt.number.HasValue() {
+		return snt.number.Uint64()
+	}
+	if snt.IsNumber() {
+		return snt.number.Uint64()
+	}
+	return 0, false
+}
+func (snt *StringNumberOrTime) Uint() (uint, bool) {
 	if snt.number.HasValue() {
 		return snt.number.Uint()
 	}
 	if snt.IsNumber() {
 		return snt.number.Uint()
 	}
-	return nil, false
+	return 0, false
 }
+func (snt *StringNumberOrTime) Uint32() (uint32, bool) {
+	if snt.number.HasValue() {
+		return snt.number.Uint32()
+	}
+	if snt.IsNumber() {
+		return snt.number.Uint32()
+	}
+	return 0, false
+}
+func (snt *StringNumberOrTime) Uint16() (uint16, bool) {
+	if snt.number.HasValue() {
+		return snt.number.Uint16()
+	}
+	if snt.IsNumber() {
+		return snt.number.Uint16()
+	}
+	return 0, false
+}
+func (snt *StringNumberOrTime) Uint8() (uint8, bool) {
+	if snt.number.HasValue() {
+		return snt.number.Uint8()
+	}
+	if snt.IsNumber() {
+		return snt.number.Uint8()
+	}
+	return 0, false
+}
+func (snt *StringNumberOrTime) Int() (int, bool) {
+	if snt.number.HasValue() {
+		return snt.number.Int()
+	}
+	if snt.IsNumber() {
+		return snt.number.Int()
+	}
+	return 0, false
+}
+func (snt *StringNumberOrTime) Int32() (int32, bool) {
+	if snt.number.HasValue() {
+		return snt.number.Int32()
+	}
+	if snt.IsNumber() {
+		return snt.number.Int32()
+	}
+	return 0, false
+}
+func (snt *StringNumberOrTime) Int16() (int16, bool) {
+	if snt.number.HasValue() {
+		return snt.number.Int16()
+	}
+	if snt.IsNumber() {
+		return snt.number.Int16()
+	}
+	return 0, false
+}
+func (snt *StringNumberOrTime) Int8() (int8, bool) {
+	if snt.number.HasValue() {
+		return snt.number.Int8()
+	}
+	if snt.IsNumber() {
+		return snt.number.Int8()
+	}
+	return 0, false
+}
+
 func (snt *StringNumberOrTime) IsNumber() bool {
-	_, ok := snt.Number()
-	return ok
+	return snt.Number() != nil
 }
 
 func (snt *StringNumberOrTime) IsNilOrEmpty() bool {
@@ -255,7 +339,7 @@ func (snt *StringNumberOrTime) IsNilOrZero() bool {
 	if snt.IsNilOrEmpty() {
 		return true
 	}
-	if v, ok := snt.Number(); ok {
+	if v := snt.Number(); v != nil {
 		return v == 0
 	}
 	if v, ok := snt.Time(); ok {

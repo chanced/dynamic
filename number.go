@@ -11,10 +11,10 @@ import (
 var typeNumber = reflect.TypeOf(Number{})
 
 const (
-	smallestJSONInt   = -9007199254740991
-	maxJSONInt        = 9007199254740991
-	smallestJSONFloat = float64(-9007199254740991)
-	maxJSONFloat      = float64(9007199254740991)
+	smallestJSONInt = -9007199254740991
+	maxJSONInt      = 9007199254740991
+	// smallestJSONFloat = float64(-9007199254740991)
+	// maxJSONFloat      = float64(9007199254740991)
 )
 
 // NewNumber returns a new Number set to the first, if any, parameters.
@@ -164,8 +164,14 @@ func (n Number) IsNil() bool {
 func (n Number) Bytes() []byte {
 	return []byte(n.String())
 }
-
-func (n Number) Float() (float64, bool) {
+func (n Number) Float32() (float32, bool) {
+	if f, ok := n.Float64(); ok && math.MaxFloat32 <= math.Abs(f) {
+		v, _ := strconv.ParseFloat(strconv.FormatFloat(f, 'f', -1, 64), 32)
+		return float32(v), true
+	}
+	return 0, false
+}
+func (n Number) Float64() (float64, bool) {
 	if n.IsNil() {
 		return 0, false
 	}
@@ -189,7 +195,7 @@ func (n Number) Float() (float64, bool) {
 	return 0, false
 }
 
-func (n Number) Int() (int64, bool) {
+func (n Number) Int64() (int64, bool) {
 	if n.intValue != nil {
 		return *n.intValue, true
 	}
@@ -215,7 +221,60 @@ func (n Number) Int() (int64, bool) {
 	return 0, false
 }
 
-func (n Number) Uint() (uint64, bool) {
+func (n Number) Int() (int, bool) {
+	if i, ok := n.Int64(); ok && int64(int(i)) == i {
+		return int(i), true
+	}
+	return 0, false
+}
+
+func (n Number) Int32() (int32, bool) {
+	if i, ok := n.Int64(); ok && i <= math.MaxInt32 && i >= math.MinInt32 {
+		return int32(i), true
+	}
+	return 0, false
+}
+func (n Number) Int16() (int16, bool) {
+	if i, ok := n.Int64(); ok && i <= math.MaxInt16 && i >= math.MinInt16 {
+		return int16(i), true
+	}
+	return 0, false
+}
+func (n Number) Int8() (int8, bool) {
+	if i, ok := n.Int64(); ok && i <= math.MaxInt8 && i >= math.MinInt8 {
+		return int8(i), true
+	}
+	return 0, false
+}
+
+func (n Number) Uint() (uint, bool) {
+	if u, ok := n.Uint64(); ok && uint64(uint(u)) == u {
+		return uint(u), true
+	}
+	return 0, false
+}
+
+func (n Number) Uint32() (uint32, bool) {
+	if u, ok := n.Uint64(); ok && u <= math.MaxUint32 {
+		return uint32(u), true
+	}
+	return 0, false
+}
+func (n Number) Uint16() (uint16, bool) {
+	if u, ok := n.Uint64(); ok && u <= math.MaxUint16 {
+		return uint16(u), true
+	}
+	return 0, false
+}
+
+func (n Number) Uint8() (uint8, bool) {
+	if u, ok := n.Uint64(); ok && u <= math.MaxUint8 {
+		return uint8(u), true
+	}
+	return 0, false
+}
+
+func (n Number) Uint64() (uint64, bool) {
 	if n.uintValue != nil {
 		return *n.uintValue, true
 	}
@@ -275,6 +334,9 @@ func (n *Number) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		v, err = parseNumberFromString(str)
+		if err != nil {
+			return err
+		}
 
 	default:
 		return &json.UnmarshalTypeError{Value: string(data), Type: typeNumber}
@@ -339,10 +401,7 @@ func (n Number) MarshalJSON() ([]byte, error) {
 		}
 	}
 	if n.floatValue != nil {
-		if maxJSONFloat >= *n.floatValue && *n.floatValue >= smallestJSONFloat {
-			return json.Marshal(*n.floatValue)
-		}
-		return json.Marshal(strconv.FormatFloat(*n.floatValue, 'f', -1, 64))
+		return json.Marshal(*n.floatValue)
 	}
 	return json.Marshal(nil)
 }

@@ -227,50 +227,134 @@ func (snbt *StringNumberBoolOrTime) IsTime(layout ...string) bool {
 	return false
 }
 
-func (snbt *StringNumberBoolOrTime) Number() (interface{}, bool) {
+// Number returns the underlying value of Number. It could be: int64, uint64,
+// float64, or nil. If you need specific types, use their corresponding methods.
+func (snbt *StringNumberBoolOrTime) Number() interface{} {
 	if snbt.number.HasValue() {
-		return snbt.number.Value(), true
+		return snbt.number.Value()
 	}
 	if snbt.str.HasValue() && !snbt.str.IsEmpty() {
 		err := snbt.number.Parse(snbt.str.String())
 		if err != nil {
-			return nil, false
+			return nil
 		}
 		snbt.str.Clear()
-		return snbt.number.Value(), true
+		return snbt.number.Value()
 	}
-	return nil, false
+	return nil
 }
 
-func (snbt *StringNumberBoolOrTime) Float() (interface{}, bool) {
+func (snbt *StringNumberBoolOrTime) Float64() (float64, bool) {
 	if snbt.number.HasValue() {
-		return snbt.number.Float()
+		return snbt.number.Float64()
 	}
 	if snbt.IsNumber() {
-		return snbt.number.Float()
+		return snbt.number.Float64()
 	}
-	return nil, false
+	return 0, false
 }
 
-func (snbt *StringNumberBoolOrTime) Int() (interface{}, bool) {
+func (snbt *StringNumberBoolOrTime) Float32() (float32, bool) {
 	if snbt.number.HasValue() {
-		return snbt.number.Int()
+		return snbt.number.Float32()
 	}
 	if snbt.IsNumber() {
-		return snbt.number.Int()
+		return snbt.number.Float32()
 	}
-	return nil, false
+	return 0, false
 }
-func (snbt *StringNumberBoolOrTime) Uint() (interface{}, bool) {
+
+func (snbt *StringNumberBoolOrTime) Int64() (int64, bool) {
+	if snbt.number.HasValue() {
+		return snbt.number.Int64()
+	}
+	if snbt.IsNumber() {
+		return snbt.number.Int64()
+	}
+	return 0, false
+}
+func (snbt *StringNumberBoolOrTime) Uint64() (uint64, bool) {
+	if snbt.number.HasValue() {
+		return snbt.number.Uint64()
+	}
+	if snbt.IsNumber() {
+		return snbt.number.Uint64()
+	}
+	return 0, false
+}
+func (snbt *StringNumberBoolOrTime) Uint() (uint, bool) {
 	if snbt.number.HasValue() {
 		return snbt.number.Uint()
 	}
 	if snbt.IsNumber() {
 		return snbt.number.Uint()
 	}
-	return nil, false
+	return 0, false
 }
+func (snbt *StringNumberBoolOrTime) Uint32() (uint32, bool) {
+	if snbt.number.HasValue() {
+		return snbt.number.Uint32()
+	}
+	if snbt.IsNumber() {
+		return snbt.number.Uint32()
+	}
+	return 0, false
+}
+func (snbt *StringNumberBoolOrTime) Uint16() (uint16, bool) {
+	if snbt.number.HasValue() {
+		return snbt.number.Uint16()
+	}
+	if snbt.IsNumber() {
+		return snbt.number.Uint16()
+	}
+	return 0, false
+}
+func (snbt *StringNumberBoolOrTime) Uint8() (uint8, bool) {
+	if snbt.number.HasValue() {
+		return snbt.number.Uint8()
+	}
+	if snbt.IsNumber() {
+		return snbt.number.Uint8()
+	}
+	return 0, false
+}
+func (snbt *StringNumberBoolOrTime) Int() (int, bool) {
+	if snbt.number.HasValue() {
+		return snbt.number.Int()
+	}
+	if snbt.IsNumber() {
+		return snbt.number.Int()
+	}
+	return 0, false
+}
+func (snbt *StringNumberBoolOrTime) Int32() (int32, bool) {
+	if snbt.number.HasValue() {
+		return snbt.number.Int32()
+	}
+	if snbt.IsNumber() {
+		return snbt.number.Int32()
+	}
+	return 0, false
+}
+func (snbt *StringNumberBoolOrTime) Int16() (int16, bool) {
+	if snbt.number.HasValue() {
+		return snbt.number.Int16()
+	}
+	if snbt.IsNumber() {
+		return snbt.number.Int16()
+	}
+	return 0, false
+}
+func (snbt *StringNumberBoolOrTime) Int8() (int8, bool) {
+	if snbt.number.HasValue() {
+		return snbt.number.Int8()
+	}
+	if snbt.IsNumber() {
+		return snbt.number.Int8()
+	}
+	return 0, false
+}
+
 func (snbt *StringNumberBoolOrTime) IsNumber() bool {
-	_, ok := snbt.Number()
-	return ok
+	return snbt.Number() != nil
 }
