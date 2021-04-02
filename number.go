@@ -57,7 +57,12 @@ func (n *Number) Set(value interface{}) error {
 	case *Number:
 		return n.Set(n.Value())
 	case float32:
-		f := float64(v)
+		// this is the safest way I can come up with atm.
+		//  fl := float32(34.34)
+		//  d := float64(34.34)
+		//  d == float64(fl) // false
+
+		f, _ := strconv.ParseFloat(strconv.FormatFloat(float64(v), 'f', -1, 32), 32)
 		n.floatValue = &f
 	case float64:
 		n.floatValue = &v
