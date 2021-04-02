@@ -2,7 +2,7 @@
 
 dynamic is a collection of dynamic data types to supoprt [picker](https://github.com/chanced/picker)
 
-All types have a `Value` method which return `interface{}`. The reason for this is that they can be `nil` or potentially various types. Values that are `nil` are json encoded to `null`.
+All types have a `Value` method which return `interface{}`. The reason for this is that they can be `nil` or potentially various types. Values that are `nil` are json encoded to `null`. Use a pointer if you avoid this as json `omitempty` will not work.
 
 ## dynamic.Bool
 
