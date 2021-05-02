@@ -6,11 +6,6 @@ import (
 	"errors"
 )
 
-var (
-	trueBytes  = []byte("true")
-	falseBytes = []byte("false")
-)
-
 type JSON []byte
 
 func (d JSON) Len() int {
@@ -35,7 +30,8 @@ func (d JSON) IsObject() bool {
 	if len(d) < 2 {
 		return false
 	}
-	return d[0] == '{' && d[len(d)-1] == '}'
+	d = bytes.TrimSpace(d)
+	return d[0] == '{'
 }
 
 func (d JSON) IsEmptyObject() bool {
@@ -49,10 +45,11 @@ func (d JSON) IsEmptyArray() bool {
 // IsArray reports whether the data is a json array. It does not check whether
 // the json is malformed.
 func (d JSON) IsArray() bool {
+	d = bytes.TrimSpace(d)
 	if len(d) < 2 {
 		return false
 	}
-	return d[0] == '[' && d[len(d)-1] == ']'
+	return d[0] == '['
 }
 
 func (d JSON) IsNull() bool {
@@ -64,10 +61,7 @@ func (d JSON) IsNull() bool {
 //
 // IsBool does not parse strings
 func (d JSON) IsBool() bool {
-	if len(d) < 4 {
-		return false
-	}
-	return (d[0] == 't' && len(d) == 4) || (d[0] == 'f' && len(d) == 5)
+	return d.IsTrue() || d.IsFalse()
 }
 
 // IsTrue reports true if data appears to be a json boolean value of true. It is
@@ -76,7 +70,7 @@ func (d JSON) IsBool() bool {
 //
 // IsTrue does not parse strings
 func (d JSON) IsTrue() bool {
-	return d.IsBool() && d[0] == 't'
+	return len(d) == 4 && d[0] == 't'
 }
 
 // IsFalse reports true if data appears to be a json boolean value of false. It is
@@ -85,7 +79,7 @@ func (d JSON) IsTrue() bool {
 //
 // IsFalse does not parse strings
 func (d JSON) IsFalse() bool {
-	return bytes.Equal(d, falseBytes)
+	return len(d) == 5 && d[0] == 'f'
 }
 
 func (d JSON) Equal(data []byte) bool {

@@ -4,6 +4,8 @@ dynamic is a collection of dynamic data types to supoprt [picker](https://github
 
 All types have a `Value` method which return `interface{}`. The reason for this is that they can be `nil` or potentially various types. Values that are `nil` are json encoded to `null`. Use a pointer if you avoid this as json `omitempty` will not work.
 
+dynamic types are not thread safe.
+
 ## dynamic.Bool
 
 You can set Bool with any of the following:
@@ -96,7 +98,7 @@ func main(){
 }
 ```
 
-## String
+## dynamic.String
 
 String accepts any of the following types:
 
@@ -134,7 +136,7 @@ func main() {
 
 ```
 
-## StringNumberBoolOrTime
+## dynamic.StringNumberBoolOrTime
 
 StringNumberBoolOrTime accepts any of the following types:
 
@@ -165,7 +167,7 @@ func main() {
 }
 ```
 
-## StringNumberOrTime
+## dynamic.StringNumberOrTime
 
 StringNumberOrTime accepts any of the following types:
 
@@ -201,7 +203,7 @@ func main() {
 }
 ```
 
-## BoolOrString
+## dynamic.BoolOrString
 
 BoolOrString accepts any of the following types:
 
@@ -231,7 +233,7 @@ func main() {
 }
 ```
 
-## StringOrArrayOfStrings
+## dynamic.StringOrArrayOfStrings
 
 This is essentially a `[]string` except it'll Unmarshal either a `string` or a `[]string`. It always marshals into `[]string` though.
 
