@@ -28,11 +28,12 @@ func (d *JSON) UnmarshalJSON(data []byte) error {
 	return nil
 }
 func (d JSON) IsObject() bool {
-	if len(d) < 2 {
-		return false
+	for _, v := range d {
+		if !unicode.IsSpace(rune(v)) {
+			return v == '{'
+		}
 	}
-	d = bytes.TrimSpace(d)
-	return d[0] == '{'
+	return false
 }
 
 func (d JSON) IsEmptyObject() bool {
