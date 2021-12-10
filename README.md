@@ -10,14 +10,14 @@ dynamic types are not thread safe.
 
 You can set Bool with any of the following:
 
-- `bool`, `*bool`
-- `dynamic.Bool`
-- `*dynamic.Bool`
-- `string`
-- `*string`
-- `[]byte`
-- `fmt.Stringer`
-- `nil`
+-   `bool`, `*bool`
+-   `dynamic.Bool`
+-   `*dynamic.Bool`
+-   `string`
+-   `*string`
+-   `[]byte`
+-   `fmt.Stringer`
+-   `nil`
 
 ```go
 package main
@@ -47,22 +47,22 @@ _ = err
 
 You can set Number with any of the following:
 
-- `string`,
-- `*string`
-- `json.Number`
-- `fmt.Stringer`
-- `int`,
-- `int`, `int64`, `int32`, `int16`, `int8`
-- `uint`, `uint64`, `uint32`, `uint16`, `uint8`
-- `float64`, `float32`
-- `complex128`, `complex64`
-- `*int`, `*int64`, `*int32`, `*int16`, `*int8`
-- `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
-- `*float64`, `*float32`,
-- `*complex128`, `*complex64`
-- `[]byte`,
-- `fmt.Stringer`
-- `nil`
+-   `string`,
+-   `*string`
+-   `json.Number`
+-   `fmt.Stringer`
+-   `int`,
+-   `int`, `int64`, `int32`, `int16`, `int8`
+-   `uint`, `uint64`, `uint32`, `uint16`, `uint8`
+-   `float64`, `float32`
+-   `complex128`, `complex64`
+-   `*int`, `*int64`, `*int32`, `*int16`, `*int8`
+-   `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
+-   `*float64`, `*float32`,
+-   `*complex128`, `*complex64`
+-   `[]byte`,
+-   `fmt.Stringer`
+-   `nil`
 
 ```go
 package main
@@ -102,18 +102,16 @@ func main(){
 
 String accepts any of the following types:
 
-- `string`, `*string`
-- `[]byte`
-- `dynamic.String`, `*dynamic.String`
-- `fmt.Stringer`
-- `[]string` (joined with `","`)
-- `int`, `int64`, `int32`, `int16`, `int8`, `*int`, `*int64`, `*int32`, `*int16`, `*int8`,
-- `uint`, `uint64`, `uint32`, `uint16`, `uint8`, `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
-- `float64`, `float32`, `complex128`, `complex64`, `*float64`, `*float32`, `*complex128`, `*complex64`
-- `bool`, `*bool`
-- `nil`
-
-All `strings` functions are available, such as `Equal`. Just be warned that it panics if the value can not be formatted or derived a a `string`.
+-   `string`, `*string`
+-   `[]byte`
+-   `dynamic.String`, `*dynamic.String`
+-   `fmt.Stringer`
+-   `[]string` (joined with `","`)
+-   `int`, `int64`, `int32`, `int16`, `int8`, `*int`, `*int64`, `*int32`, `*int16`, `*int8`,
+-   `uint`, `uint64`, `uint32`, `uint16`, `uint8`, `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
+-   `float64`, `float32`, `complex128`, `complex64`, `*float64`, `*float32`, `*complex128`, `*complex64`
+-   `bool`, `*bool`
+-   `nil`
 
 ```go
 package main
@@ -123,9 +121,7 @@ import (
 )
 
 func main() {
-    // NewString panics if it can't derive a string for now.
-    str := dynamic.NewString("str")
-
+    str, err := dynamic.NewString("str")
     val := str.ToLower().String() // "str"
 
     if str.Equal("true") {
@@ -140,16 +136,16 @@ func main() {
 
 StringNumberBoolOrTime accepts any of the following types:
 
-- `string`, `*string`
-- `[]byte`
-- `time.Time`, `*time.Time`
-- `fmt.Stringer`
-- `[]string` (joined with `","`)
-- `int`, `int64`, `int32`, `int16`, `int8`, `*int`, `*int64`, `*int32`, `*int16`, `*int8`,
-- `uint`, `uint64`, `uint32`, `uint16`, `uint8`, `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
-- `float64`, `float32`, `complex128`, `complex64`, `*float64`, `*float32`, `*complex128`, `*complex64`
-- `bool`, `*bool`
-- `nil`
+-   `string`, `*string`
+-   `[]byte`
+-   `time.Time`, `*time.Time`
+-   `fmt.Stringer`
+-   `[]string` (joined with `","`)
+-   `int`, `int64`, `int32`, `int16`, `int8`, `*int`, `*int64`, `*int32`, `*int16`, `*int8`,
+-   `uint`, `uint64`, `uint32`, `uint16`, `uint8`, `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
+-   `float64`, `float32`, `complex128`, `complex64`, `*float64`, `*float32`, `*complex128`, `*complex64`
+-   `bool`, `*bool`
+-   `nil`
 
 ```go
 package main
@@ -171,34 +167,34 @@ func main() {
 
 StringNumberOrTime accepts any of the following types:
 
-- `string`, `*string`
-- `[]byte`
-- `time.Time`, `*time.Time`
-- `fmt.Stringer`
-- `[]string` (joined with `","`)
-- `int`, `int64`, `int32`, `int16`, `int8`, `*int`, `*int64`, `*int32`, `*int16`, `*int8`,
-- `uint`, `uint64`, `uint32`, `uint16`, `uint8`, `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
-- `float64`, `float32`, `complex128`, `complex64`, `*float64`, `*float32`, `*complex128`, `*complex64`
-- `bool`, `*bool`
-- `nil`
+-   `string`, `*string`
+-   `[]byte`
+-   `time.Time`, `*time.Time`
+-   `fmt.Stringer`
+-   `[]string` (joined with `","`)
+-   `int`, `int64`, `int32`, `int16`, `int8`, `*int`, `*int64`, `*int32`, `*int16`, `*int8`,
+-   `uint`, `uint64`, `uint32`, `uint16`, `uint8`, `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
+-   `float64`, `float32`, `complex128`, `complex64`, `*float64`, `*float32`, `*complex128`, `*complex64`
+-   `bool`, `*bool`
+-   `nil`
 
 ```go
 package main
 import (
-    "fmt"
+    "log"
     "github.com/chanced/dynamic"
 )
 func main() {
     now := dynamic.NewStringNumberOrTime(34.34)
 
     if n, ok := now.Float64(); {
-        fmt.Println(n)
+        log.Println(n)
     }
 
     if n, ok := now.Int64(); {
         // this won't be reached because it isn't possible to
         // convert the float value without losing data
-        panic("was able to cast a float as int64")
+        log.Fatal("was able to cast a float as int64")
     }
 }
 ```
@@ -207,15 +203,15 @@ func main() {
 
 BoolOrString accepts any of the following types:
 
-- `bool`, `*bool`
-- `string`, `*string`
-- `[]byte`
-- `fmt.Stringer`
-- `[]string` (joined with `","`)
-- `int`, `int64`, `int32`, `int16`, `int8`, `*int`, `*int64`, `*int32`, `*int16`, `*int8`,
-- `uint`, `uint64`, `uint32`, `uint16`, `uint8`, `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
-- `float64`, `float32`, `complex128`, `complex64`, `*float64`, `*float32`, `*complex128`, `*complex64`
-- `nil`
+-   `bool`, `*bool`
+-   `string`, `*string`
+-   `[]byte`
+-   `fmt.Stringer`
+-   `[]string` (joined with `","`)
+-   `int`, `int64`, `int32`, `int16`, `int8`, `*int`, `*int64`, `*int32`, `*int16`, `*int8`,
+-   `uint`, `uint64`, `uint32`, `uint16`, `uint8`, `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
+-   `float64`, `float32`, `complex128`, `complex64`, `*float64`, `*float32`, `*complex128`, `*complex64`
+-   `nil`
 
 ```go
 package main
@@ -239,16 +235,16 @@ This is essentially a `[]string` except it'll Unmarshal either a `string` or a `
 
 `NewStringOrArrayOfStrings` and `Set` accept:
 
-- `string`, `*string`
-- `[]byte`
-- `dynamic.String`, `*dynamic.String`
-- `fmt.Stringer`
-- `[]string` (joined with `","`)
-- `int`, `int64`, `int32`, `int16`, `int8`, `*int`, `*int64`, `*int32`, `*int16`, `*int8`,
-- `uint`, `uint64`, `uint32`, `uint16`, `uint8`, `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
-- `float64`, `float32`, `complex128`, `complex64`, `*float64`, `*float32`, `*complex128`, `*complex64`
-- `bool`, `*bool`
-- `nil`
+-   `string`, `*string`
+-   `[]byte`
+-   `dynamic.String`, `*dynamic.String`
+-   `fmt.Stringer`
+-   `[]string` (joined with `","`)
+-   `int`, `int64`, `int32`, `int16`, `int8`, `*int`, `*int64`, `*int32`, `*int16`, `*int8`,
+-   `uint`, `uint64`, `uint32`, `uint16`, `uint8`, `*uint`, `*uint64`, `*uint32`, `*uint16`, `*uint8`
+-   `float64`, `float32`, `complex128`, `complex64`, `*float64`, `*float32`, `*complex128`, `*complex64`
+-   `bool`, `*bool`
+-   `nil`
 
 or you can use it like a slice:
 
@@ -257,7 +253,7 @@ package main
 
 import (
   "github.com/chanced/dynamic"
-  "fmt"
+  "log"
 )
 func main() {
     strs := dynamic.StringOrArrayOfStrings{"value", "value2"}
@@ -271,7 +267,7 @@ func main() {
     if err != nil {
         // err will be nil because Iterate checks for dynamic.Done
         // (or an error which returns "done" from Error())
-        panic(err)
+        log.fatal(err)
     }
 
     err = strs.Iterate(func(v string) error) {
@@ -281,7 +277,7 @@ func main() {
     })
     if err != nil {
         // err will be "some error"
-        fmt.Println(err)
+        log.Println(err)
     }
 
 }
@@ -294,6 +290,7 @@ JSON is basically `[]byte` with helper methods as well as satisfying `json.Marsh
 
 ```go
   import(
+      "fmt"
       "encoding/json"
       "github.com/chanced/dynamic"
   )
@@ -349,10 +346,10 @@ JSON is basically `[]byte` with helper methods as well as satisfying `json.Marsh
 
 ## TODO
 
-- [ ] Add `math` functions as methods to `Number`
-- [ ] Add `dynamic.String` methods to all types which could be `string`
-- [ ] Lot more testing to do
-- [ ] Comments
+-   [ ] Add `math` functions as methods to `Number`
+-   [ ] Add `dynamic.String` methods to all types which could be `string`
+-   [ ] Lot more testing to do
+-   [ ] Comments
 
 ## License
 

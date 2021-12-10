@@ -18,30 +18,23 @@ import (
 //  bool, *bool
 //  nil
 //
-// Warning
-//
-// This function panics iff the value provided is not an accepted type.
-//
 // If you need type checking, use Set
-func NewStringNumberOrTime(value interface{}) StringNumberOrTime {
+func NewStringNumberOrTime(value interface{}) (StringNumberOrTime, error) {
 	snt := StringNumberOrTime{
 		time:   Time{},
 		str:    String{},
 		number: Number{},
 	}
 	err := snt.Set(value)
-	if err != nil {
-		panic(err)
-	}
-	return snt
+	return snt, err
 }
 
 // NewStringNumberOrTimePtr returns a pointer to a new NewStringNumberOrTimePtr
 //
 // See NewNewStringNumberOrTime for info & warnings
-func NewStringNumberOrTimePtr(value interface{}) *StringNumberOrTime {
-	snt := NewStringNumberOrTime(value)
-	return &snt
+func NewStringNumberOrTimePtr(value interface{}) (*StringNumberOrTime, error) {
+	snt, err := NewStringNumberOrTime(value)
+	return &snt, err
 }
 
 // TODO: add format to the instances

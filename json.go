@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"unicode"
 )
 
 type JSON []byte
@@ -39,17 +40,30 @@ func (d JSON) IsEmptyObject() bool {
 }
 
 func (d JSON) IsEmptyArray() bool {
-	return d.IsArray() && len(d) == 2
+	if !d.IsArray() {
+		return false
+	}
+	count := 0
+	for _, v := range d {
+		if !unicode.IsSpace(rune(v)) {
+			count += 1
+			if count > 2 {
+				return false
+			}
+		}
+	}
+	return count == 2
 }
 
 // IsArray reports whether the data is a json array. It does not check whether
 // the json is malformed.
 func (d JSON) IsArray() bool {
-	d = bytes.TrimSpace(d)
-	if len(d) < 2 {
-		return false
+	for _, v := range d {
+		if !unicode.IsSpace(rune(v)) {
+			return v == '['
+		}
 	}
-	return d[0] == '['
+	return false
 }
 
 func (d JSON) IsNull() bool {

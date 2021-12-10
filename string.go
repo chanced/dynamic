@@ -26,28 +26,18 @@ type String struct {
 //  bool, *bool
 //  nil
 //
-// Warning
-//
-// This function panics if value is not one of the above. If you need error checking, use:
-//  str := dynamic.String{}
-//  err := str.Set("value")
-// Alternatively, you can check if it is nil:
-//  _ = dynamic.NewString().IsNil() // true
-func NewString(value interface{}) String {
+func NewString(value interface{}) (String, error) {
 	str := String{}
 	err := str.Set(value)
-	if err != nil {
-		panic(err)
-	}
-	return str
+	return str, err
 }
 
 // NewStringPtr returns a pointer to a new String
 //
 // See NewString for information on valid values and usage
-func NewStringPtr(value interface{}) *String {
-	s := NewString(value)
-	return &s
+func NewStringPtr(value interface{}) (*String, error) {
+	s, err := NewString(value)
+	return &s, err
 }
 func (s *String) Reference() *String {
 	return s
@@ -68,7 +58,7 @@ func (s *String) IsNil() bool {
 
 // IsNull reports whether s is nil or equal to "null"
 func (s *String) IsNull() bool {
-	return s == nil || s.IsNil() || s.Equal("null")
+	return s == nil || s.value == nil || *s.value == "null"
 }
 func (s *String) Len() int {
 	if s == nil || s.IsEmpty() {
@@ -94,13 +84,14 @@ func (s *String) ContainsRune(r rune) bool {
 //
 // If substr is an empty string, Count returns 1 + the number of Unicode code
 // points in s.
+//
 func (s *String) Count(value interface{}) int {
 	if s == nil || s.IsEmpty() {
 		return 0
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return -1
 	}
 	if str == nil {
 		return 0
@@ -111,12 +102,12 @@ func (s *String) Count(value interface{}) int {
 // Map returns a copy of *String s with all its characters modified according
 // to the mapping function. If mapping returns a negative value, the character
 // is dropped from the string with no replacement.
-func (s *String) Map(mapping func(rune) rune) *String {
+func (s *String) Map(mapping func(rune) rune) (*String, error) {
 	if s == nil {
-		return &String{}
+		return &String{}, nil
 	}
 	if s.IsEmpty() {
-		return s
+		return s, nil
 	}
 	return NewStringPtr(strings.Map(mapping, s.String()))
 
@@ -128,18 +119,17 @@ func (s *String) Map(mapping func(rune) rune) *String {
 // replacements for a k-rune string. If n < 0, there is no limit on the number
 // of replacements.
 //
-// Replace panics if old or new can not be parsed as strings (see Set)
-func (s *String) Replace(old interface{}, new interface{}, n int) *String {
+func (s *String) Replace(old interface{}, new interface{}, n int) (*String, error) {
 	if s == nil {
-		return &String{}
+		return &String{}, nil
 	}
 	if s.IsEmpty() {
-		return s
+		return s, nil
 	}
 
 	oldPtr, err := formatString(old)
 	if err != nil {
-		panic(err)
+		return s, err
 	}
 	var oldStr string
 	if oldPtr != nil {
@@ -148,7 +138,7 @@ func (s *String) Replace(old interface{}, new interface{}, n int) *String {
 	var newStr string
 	newPtr, err := formatString(new)
 	if err != nil {
-		panic(err)
+		return s, err
 	}
 	if newPtr != nil {
 		newStr = *newPtr
@@ -160,11 +150,9 @@ func (s *String) Replace(old interface{}, new interface{}, n int) *String {
 // of old replaced by new. If old is empty, it matches at the beginning of the
 // string and after each UTF-8 sequence, yielding up to k+1 replacements for a
 // k-rune string.
-//
-// Replace panics if old or new can not be parsed as strings (see Set)
-func (s *String) ReplaceAll(old interface{}, new interface{}) *String {
+func (s *String) ReplaceAll(old interface{}, new interface{}) (*String, error) {
 	if s == nil {
-		return &String{}
+		return &String{}, nil
 	}
 	return s.Replace(old, new, -1)
 
@@ -174,19 +162,19 @@ func (s *String) ReplaceAll(old interface{}, new interface{}) *String {
 // substrings between those separators.
 //
 // The count determines the number of substrings to return:
-func (s *String) SplitN(sep interface{}, n int) []string {
+func (s *String) SplitN(sep interface{}, n int) ([]string, error) {
 	if s == nil || s.IsEmpty() {
-		return []string{}
+		return []string{}, nil
 	}
 
 	ptr, err := formatString(sep)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	if ptr == nil || *ptr == "" {
-		return []string{s.String()}
+		return []string{s.String()}, err
 	}
-	return strings.SplitN(s.String(), *ptr, n)
+	return strings.SplitN(s.String(), *ptr, n), err
 }
 
 // Split slices s into all substrings separated by sep and returns a slice of
@@ -199,9 +187,9 @@ func (s *String) SplitN(sep interface{}, n int) []string {
 // are empty, Split returns an empty slice.
 //
 // It is equivalent to SplitN with a count of -1.
-func (s *String) Split(sep interface{}) []string {
+func (s *String) Split(sep interface{}) ([]string, error) {
 	if s == nil || s.IsEmpty() {
-		return []string{}
+		return []string{}, nil
 	}
 	return s.SplitN(sep, -1)
 }
@@ -216,72 +204,72 @@ func (s *String) Split(sep interface{}) []string {
 // sep are empty, SplitAfter returns an empty slice.
 //
 // It is equivalent to SplitAfterN with a count of -1.
-func (s *String) SplitAfter(sep interface{}) []string {
+func (s *String) SplitAfter(sep interface{}) ([]string, error) {
 	if s == nil || s.IsEmpty() {
-		return []string{}
+		return []string{}, nil
 	}
 	return s.SplitAfterN(sep, -1)
 }
-func (s *String) SplitAfterN(sep interface{}, n int) []string {
+func (s *String) SplitAfterN(sep interface{}, n int) ([]string, error) {
 	if s == nil || s.IsEmpty() {
-		return []string{}
+		return []string{}, nil
 	}
 	ptr, err := formatString(sep)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	if ptr == nil || *ptr == "" {
-		return []string{s.String()}
+		return []string{s.String()}, nil
 	}
-	return strings.SplitAfterN(s.String(), *ptr, n)
+	return strings.SplitAfterN(s.String(), *ptr, n), nil
 }
 
 // Title returns a copy of the *String s with all Unicode letters that begin words
 // mapped to their Unicode title case.
 //
 // BUG(rsc): The rule Title uses for word boundaries does not handle Unicode punctuation properly.
-func (s *String) Title() *String {
+func (s *String) Title() (*String, error) {
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 	if s.IsNil() {
-		return &String{}
+		return &String{}, nil
 	}
 	return NewStringPtr(strings.Title(s.String()))
 
 }
 
 // ToLower returns a new *String with all Unicode letters mapped to their lower case.
-func (s *String) ToLower() *String {
+func (s *String) ToLower() (*String, error) {
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 	if s.IsNil() {
-		return &String{}
+		return &String{}, nil
 	}
 	return NewStringPtr(strings.ToLower(s.String()))
 }
 
 // ToLowerSpecial returns a copy of the *String s with all Unicode letters
 // mapped to their lower case using the case mapping specified by c.
-func (s *String) ToLowerSpecial(c unicode.SpecialCase) *String {
+func (s *String) ToLowerSpecial(c unicode.SpecialCase) (*String, error) {
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 	if s.IsNil() {
-		return &String{}
+		return &String{}, nil
 	}
 	return NewStringPtr(strings.ToLowerSpecial(c, s.String()))
 }
 
 // ToTitle returns a copy of the *String s with all Unicode letters mapped to
 // their Unicode title case.
-func (s *String) ToTitle() *String {
+func (s *String) ToTitle() (*String, error) {
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 	if s.IsNil() {
-		return &String{}
+		return &String{}, nil
 	}
 	return NewStringPtr(strings.ToTitle(s.String()))
 }
@@ -289,36 +277,36 @@ func (s *String) ToTitle() *String {
 // ToTitleSpecial returns a copy of the *String s with all Unicode letters
 // mapped to their Unicode title case, giving priority to the special casing
 // rules.
-func (s *String) ToTitleSpecial(c unicode.SpecialCase) *String {
+func (s *String) ToTitleSpecial(c unicode.SpecialCase) (*String, error) {
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 	if s.IsNil() {
-		return &String{}
+		return &String{}, nil
 	}
 	return NewStringPtr(strings.ToTitleSpecial(c, s.String()))
 
 }
 
 // ToUpper returns s with all Unicode letters mapped to their upper case.
-func (s *String) ToUpper() *String {
+func (s *String) ToUpper() (*String, error) {
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 	if s.IsNil() {
-		return &String{}
+		return &String{}, nil
 	}
 	return NewStringPtr(strings.ToUpper(s.String()))
 }
 
 // ToUpperSpecial returns a copy of the *String s with all Unicode letters
 // mapped to their upper case using the case mapping specified by c.
-func (s *String) ToUpperSpecial(c unicode.SpecialCase) *String {
+func (s *String) ToUpperSpecial(c unicode.SpecialCase) (*String, error) {
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 	if s.IsNil() {
-		return &String{}
+		return &String{}, nil
 	}
 	return NewStringPtr(strings.ToUpperSpecial(c, s.String()))
 
@@ -326,18 +314,16 @@ func (s *String) ToUpperSpecial(c unicode.SpecialCase) *String {
 
 // ToValidUTF8 returns a copy of the string s with each run of invalid UTF-8
 // byte sequences replaced by the replacement string, which may be empty.
-//
-// It panics if replacement cannot be formatted into a string. See Set.
-func (s *String) ToValidUTF8(replacement interface{}) *String {
+func (s *String) ToValidUTF8(replacement interface{}) (*String, error) {
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 	if s.IsNil() {
-		return &String{}
+		return &String{}, nil
 	}
 	repl, err := formatString(replacement)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	if repl == nil {
 		return NewStringPtr(s)
@@ -345,82 +331,71 @@ func (s *String) ToValidUTF8(replacement interface{}) *String {
 	return NewStringPtr(strings.ToValidUTF8(s.String(), *repl))
 }
 
-func (s *String) Copy() *String {
+func (s *String) Copy() (*String, error) {
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 	if s.IsNil() {
-		return &String{}
+		return &String{}, nil
 	}
 	return NewStringPtr(s.String())
 }
 
 // ContainsAny reports whether any Unicode code points in chars are within s.
-//
-// It panics if value can not be interpreted as a string or formatted as such.
-// See Set
-func (s *String) ContainsAny(value interface{}) bool {
+func (s *String) ContainsAny(value interface{}) (bool, error) {
 	if s == nil || s.IsNil() {
-		return false
+		return false, nil
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 	if str == nil || *str == "" {
-		return false
+		return false, nil
 	}
-	return strings.ContainsAny(s.String(), *str)
+	return strings.ContainsAny(s.String(), *str), nil
 }
 
 //Compare returns an integer comparing two strings lexicographically.
 //
 // The result will be 0 if s==value, -1 if s < value, and +1 if s > value.
-//
-// It panics if value can not be interpreted as a string or formatted as such. See Set
-func (s *String) Compare(value interface{}) (res int) {
+func (s *String) Compare(value interface{}) (int, error) {
 	if s == nil || s.IsNil() {
-		return -1
+		return -1, nil
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return -1, err
 	}
 	if str == nil {
 		empty := ""
 		str = &empty
 	}
-	return strings.Compare(s.String(), *str)
+	return strings.Compare(s.String(), *str), nil
 }
 
 // Contains reports whether the formatted value is within s.
-//
-// It panics if value can not be interpreted as a string or formatted as such.
-// See Set
-func (s *String) Contains(value interface{}) bool {
+func (s *String) Contains(value interface{}) (bool, error) {
 	if s == nil || s.IsNil() {
-		return false
+		return false, nil
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return false, err
 	}
-	if str == nil {
-		return false
-	}
-	return strings.Contains(s.String(), *str)
-
+	return strings.Contains(s.String(), *str), nil
 }
 
 // Fields splits the string s around each instance of one or more consecutive
 // white space characters, as defined by unicode.IsSpace, returning a slice of
 // substrings of s or an empty slice if s contains only white space.
-func (s *String) Fields() []string {
+func (s *String) Fields() ([]string, error) {
 	if s == nil || s.IsEmpty() {
-		return []string{}
+		return []string{}, nil
 	}
-	return strings.Fields(*s.value)
+	return strings.Fields(*s.value), nil
 }
+
 func (s *String) FieldsFunc(f func(rune) bool) []string {
 	if s == nil || s.IsEmpty() {
 		return []string{}
@@ -430,98 +405,83 @@ func (s *String) FieldsFunc(f func(rune) bool) []string {
 }
 
 // HasPrefix tests whether the string s begins with prefix.
-//
-// It panics if value can not be interpreted as a string or formatted as such.
-// See Set
-func (s *String) HasPrefix(value interface{}, timeLayouts ...string) bool {
+func (s *String) HasPrefix(value interface{}, timeLayouts ...string) (bool, error) {
 	if s == nil || s.IsNil() {
-		return false
+		return false, nil
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 	if str == nil {
-		return false
+		return false, err
 	}
-	return strings.HasPrefix(s.String(), *str)
+	return strings.HasPrefix(s.String(), *str), err
 
 }
 
 // HasSuffix tests whether the string s ends with suffix.
-//
-// It panics if value can not be interpreted as a string or formatted as such.
-// See Set
-func (s *String) HasSuffix(value interface{}) bool {
+func (s *String) HasSuffix(value interface{}) (bool, error) {
 	if s == nil || s.IsNil() {
-		return false
+		return false, nil
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 	if str == nil {
-		return false
+		return false, err
 	}
-	return strings.HasSuffix(s.String(), *str)
+	return strings.HasSuffix(s.String(), *str), err
 
 }
 
 // LastIndex returns the index of the last instance of substr in s, or -1 if
 // substr is not present in s.
-//
-// It panics if value can not be interpreted as a string or formatted as such.
-// See Set
-func (s *String) LastIndex(value interface{}) (res int) {
+func (s *String) LastIndex(value interface{}) (int, error) {
 	if s == nil || s.IsNil() {
-		return -1
+		return -1, nil
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return 1, err
 	}
 	if str == nil {
-		return -1
+		return -1, nil
 	}
-	return strings.LastIndex(s.String(), *str)
+	return strings.LastIndex(s.String(), *str), err
 }
 
 // IndexAny returns the index of the first instance of any Unicode code point
 // from chars in s, or -1 if no Unicode code point from chars is present in s.
-//
-// It panics if value can not be interpreted as a string or formatted as such.
-// See Set.
-func (s *String) IndexAny(value interface{}) (res int) {
+func (s *String) IndexAny(value interface{}) (int, error) {
 	if s == nil || s.IsNil() {
-		return -1
+		return -1, nil
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return -1, err
 	}
 	if str == nil {
-		return -1
+		return -1, nil
 	}
-	return strings.IndexAny(s.String(), *str)
+	return strings.IndexAny(s.String(), *str), err
 }
 
 // Index returns the index of the first instance of substr in s, or -1 if substr
 // is not present in s.
-//
-// It panics if value can not be interpreted as a string or formatted as such.
-// See Set
-func (s *String) Index(value interface{}) (res int) {
+func (s *String) Index(value interface{}) (int, error) {
 	if s == nil || s.IsNil() {
-		return -1
+		return -1, nil
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return -1, err
 	}
 	if str == nil {
-		return -1
+		return -1, nil
 	}
-	return strings.Index(s.String(), *str)
+	return strings.Index(s.String(), *str), nil
 }
 
 // LastIndexFunc returns the index into s of the last Unicode code point
@@ -546,35 +506,31 @@ func (s *String) IndexFunc(fn func(r rune) bool) int {
 // EqualFold reports whether s and t, interpreted as UTF-8 strings, are equal
 // under Unicode case-folding, which is a more general form of
 // case-insensitivity.
-//
-// It panics if value can not be interpreted or formatted as a string. See Set
-func (s *String) EqualFold(value interface{}) bool {
+func (s *String) EqualFold(value interface{}) (bool, error) {
 	if s == nil || s.value == nil {
-		return value == nil
+		return value == nil, nil
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 	if str == nil {
-		return false
+		return false, nil
 	}
-	return strings.EqualFold(s.String(), *str)
+	return strings.EqualFold(s.String(), *str), nil
 }
 
 // Equal reports whether the formatted value is equal to the underlying value
 // of *String s.
-//
-// It panics if value can not be formatted as a string. See Set
-func (s *String) Equal(value interface{}) bool {
+func (s *String) Equal(value interface{}) (bool, error) {
 	if s == nil || s.value == nil {
-		return value == nil
+		return value == nil, nil
 	}
 	str, err := formatString(value)
 	if err != nil {
-		panic(err)
+		return false, err
 	}
-	return *s.value == *str
+	return *s.value == *str, nil
 }
 
 // IndexByte returns the index of the first instance of c in s, or -1 if c is

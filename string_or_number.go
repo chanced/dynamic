@@ -24,27 +24,21 @@ type StringOrNumber struct {
 //  bool, *bool
 //  nil
 //
-// Warning
-//
-// This function panics if value is not an accepted type. If you need error
 // checking, use:
 //  v := &dynamic.StringOrNumber{}
 //  err := v.Set(myType)
-func NewStringOrNumber(value interface{}) StringOrNumber {
+func NewStringOrNumber(value interface{}) (StringOrNumber, error) {
 	sn := StringOrNumber{
 		str:    String{},
 		number: Number{},
 	}
 	err := sn.Set(value)
-	if err != nil {
-		panic(err)
-	}
-	return sn
+	return sn, err
 }
 
-func NewStringOrNumberPtr(value interface{}) *StringOrNumber {
-	sn := NewStringOrNumber(value)
-	return &sn
+func NewStringOrNumberPtr(value interface{}) (*StringOrNumber, error) {
+	sn, err := NewStringOrNumber(value)
+	return &sn, err
 }
 
 func (sn StringOrNumber) Value() interface{} {

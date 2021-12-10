@@ -28,29 +28,19 @@ type StringNumberBoolOrTime struct {
 //  bool, *bool
 //  nil
 //
-// Warning
-//
-// This function panics if value is not an accepted type. If you need error
-// checking, use:
-//  v := &dynamic.StringNumberBoolOrTime{}
-//  err := v.Set(myType)
-func NewStringNumberBoolOrTime(value interface{}) StringNumberBoolOrTime {
+func NewStringNumberBoolOrTime(value interface{}) (StringNumberBoolOrTime, error) {
 	snbt := StringNumberBoolOrTime{
 		time:    Time{},
 		str:     String{},
 		number:  Number{},
 		boolean: Bool{},
 	}
-	err := snbt.Set(value)
-	if err != nil {
-		panic(err)
-	}
-	return snbt
+	return snbt, snbt.Set(value)
 }
 
-func NewStringNumberBoolOrTimePtr(value interface{}) *StringNumberBoolOrTime {
-	snbt := NewStringNumberBoolOrTime(value)
-	return &snbt
+func NewStringNumberBoolOrTimePtr(value interface{}) (*StringNumberBoolOrTime, error) {
+	snbt, err := NewStringNumberBoolOrTime(value)
+	return &snbt, err
 }
 
 func (snbt StringNumberBoolOrTime) Value() interface{} {

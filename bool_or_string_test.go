@@ -24,9 +24,12 @@ func TestBoolOrString(t *testing.T) {
 	var s1 Struct
 	err := json.Unmarshal(raw1, &s1)
 	assert.NoError(err)
-
-	assert.Equal(dynamic.NewBoolOrString("true"), s1.V1)
-	assert.Equal(dynamic.NewBoolOrString("truth"), s1.V2)
+	bt, err := dynamic.NewBoolOrString("true")
+	assert.NoError(err)
+	assert.Equal(bt, s1.V1)
+	tr, err := dynamic.NewBoolOrString("truth")
+	assert.NoError(err)
+	assert.Equal(tr, s1.V2)
 
 	m1, err := json.Marshal(s1)
 	assert.NoError(err)
@@ -39,9 +42,12 @@ func TestBoolOrString(t *testing.T) {
 	var s2 Struct
 	err = json.Unmarshal(raw2, &s2)
 	assert.NoError(err)
-
-	assert.Equal(dynamic.NewBoolOrString("false"), s2.V1)
-	assert.Equal(dynamic.NewBoolOrString("STRVAL"), s2.V2)
+	f, err := dynamic.NewBoolOrString("false")
+	assert.NoError(err)
+	assert.Equal(f, s2.V1)
+	strv, err := dynamic.NewBoolOrString("STRVAL")
+	assert.NoError(err)
+	assert.Equal(strv, s2.V2)
 
 	m2, err := json.Marshal(s2)
 	assert.NoError(err)
