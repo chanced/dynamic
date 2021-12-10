@@ -328,7 +328,7 @@ JSON is basically `[]byte` with helper methods as well as satisfying `json.Marsh
 
       data, = json.Marshal(map[string]string{"key":"value"})
       fmt.Println(d.IsObject()) // true
-      fmt.Println(d.IsEmptyObject()) // true
+      fmt.Println(d.IsEmptyObject()) // false
   }
 ```
 
