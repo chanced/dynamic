@@ -2,7 +2,9 @@
 
 dynamic is a collection of dynamic data types to supoprt [picker](https://github.com/chanced/picker)
 
-All types have a `Value` method which return `interface{}`. The reason for this is that they can be `nil` or potentially various types. Values that are `nil` are json encoded to `null`. Use a pointer if you avoid this as json `omitempty` will not work.
+All types have a `Value` method which return `interface{}`as it can be `nil` or
+potentially various types. Values that are `nil` are json encoded to `null`. To
+avoid this behavior, use a pointer to the dynamic type.
 
 dynamic types are not thread safe.
 
@@ -185,7 +187,7 @@ import (
     "github.com/chanced/dynamic"
 )
 func main() {
-    now := dynamic.NewStringNumberOrTime(34.34)
+    now, _ := dynamic.NewStringNumberOrTime(34.34)
 
     if n, ok := now.Float64(); {
         log.Println(n)
@@ -221,7 +223,7 @@ import (
     "github.com/chanced/dynamic"
 )
 func main() {
-    v := dynamic.NewBoolOrString("true")
+    v, _ := dynamic.NewBoolOrString("true")
 
     if n, ok := v.Bool(); {
         fmt.Println(n)
@@ -256,7 +258,7 @@ import (
   "log"
 )
 func main() {
-    strs := dynamic.StringOrArrayOfStrings{"value", "value2"}
+    strs, _ := dynamic.StringOrArrayOfStrings{"value", "value2"}
 
     err := strs.Iterate(func(v string) error{
         if v == "value" {
